@@ -8,11 +8,22 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Profile } from './Profile';
+import { UserRole } from './UserRole';
 
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
+
+  @Column({
+    nullable: true
+  })
+  firstname?: string;
+
+  @Column({
+    nullable: true
+  })
+  lastname?: string;
 
   @Column({ unique: true, nullable: true })
   username: string;
@@ -35,5 +46,9 @@ export class User {
   @OneToOne(() => Profile)
   @JoinColumn()
   profile: Profile;
+
+
+  @OneToMany(() => UserRole, (userRole) => userRole.user)
+  userRoles: UserRole[];
 
 }

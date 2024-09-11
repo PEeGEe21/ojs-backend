@@ -8,6 +8,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { config } from 'src/config';
 import { Profile } from 'src/typeorm/entities/Profile';
 import { User } from 'src/typeorm/entities/User';
+import { Role } from 'src/typeorm/entities/Role';
+import { UserRole } from 'src/typeorm/entities/UserRole';
 
 @Module({
   imports: [
@@ -19,7 +21,7 @@ import { User } from 'src/typeorm/entities/User';
         expiresIn: config.expires, // 1 week
       },
     }),
-    TypeOrmModule.forFeature([User, Profile]),
+    TypeOrmModule.forFeature([User, Profile, Role, UserRole]),
   ],
   controllers: [AuthController],
   providers: [AuthService]

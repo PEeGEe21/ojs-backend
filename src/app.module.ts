@@ -8,6 +8,9 @@ import { UsersModule } from './users/users.module';
 import { User } from './typeorm/entities/User';
 import { Profile } from './typeorm/entities/Profile';
 import { config } from './config';
+import { SeederService } from './seeder/seeder.service';
+import { UserRole } from './typeorm/entities/UserRole';
+import { Role } from './typeorm/entities/Role';
 
 @Module({
   imports: [
@@ -19,14 +22,15 @@ import { config } from './config';
       username: config.db.username,
       password: config.db.password,
       database: config.db.name,
-      entities: [User, Profile],
+      entities: [User, Profile, Role, UserRole],
       synchronize: true,
       autoLoadEntities:true
     }),
+    TypeOrmModule.forFeature([Role]), // Ensure Role is added here
     AuthModule, 
     UsersModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, SeederService],
 })
 export class AppModule {}

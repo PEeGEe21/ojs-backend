@@ -11,6 +11,8 @@ import { User } from 'src/typeorm/entities/User';
 import { Repository } from 'typeorm';
 import { Profile } from 'src/typeorm/entities/Profile';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UserRole } from 'src/typeorm/entities/UserRole';
+import { Role } from 'src/typeorm/entities/Role';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +23,8 @@ export class AuthService {
 
         @InjectRepository(User) private userRepository: Repository<User>,
         @InjectRepository(Profile) private userProfileRepository: Repository<Profile>,
+        @InjectRepository(UserRole) private userRoleRepository: Repository<UserRole>,
+        @InjectRepository(Role) private roleRepository: Repository<Role>,
     ) {}
 
     async signIn(loginDto: EmailLoginDto): Promise<LoginResponseDto> {
@@ -57,6 +61,10 @@ export class AuthService {
                 );
             }
             
+
+            const userRoles = await this.usersService.getUserRoles(user.id);
+            const defaultRole = userRoles.find(role => role.is_default) || null;
+
             const payload = {
                 email: user.email,
                 sub: user.id,
@@ -68,7 +76,7 @@ export class AuthService {
                 access_token: await this.jwtService.signAsync(payload),
                 success: 'success',
                 message: 'Logged in successfully',
-                user: { ...user },
+                user: { ...user, roles: userRoles, defaultRole },
             };
 
             return response;
@@ -88,8 +96,8 @@ export class AuthService {
               `password and email fields are required`,
             );
         }
-    
-        // console.log('herer')
+        console.log(userdetails, 'herer');
+        // return;
     
         await this.checkUserAccountEmailExists(userdetails.email);
     
@@ -107,6 +115,12 @@ export class AuthService {
           email: user.email,
           profile_created: 1
         };
+
+        const role = await this.roleRepository.findOneBy({ id: userdetails.signup_as });
+        if (!role) throw new Error('Role not found');
+
+        await this.addRoleAndDefaultRole(user, role);
+
     
         const userProfileDetails = await this.createUserProfile(user.id, userprofilepayload)
     
@@ -117,7 +131,14 @@ export class AuthService {
         user.profile = userProfileDetails
         const profile = userProfileDetails
     
+        user.profileId = profile.id;
+        // user.update();
         console.log(profile, 'profile details')
+
+
+        const userRoles = await this.usersService.getUserRoles(user.id);
+        const defaultRole = userRoles.find(role => role.is_default) || null;
+
         // if (config.env === 'production') {
         //   const data = {
         //     env: 'Production',
@@ -131,28 +152,36 @@ export class AuthService {
         return {
           success: "success",
           access_token: this.jwtService.sign(payload),
-          user,
+          user: { ...user, roles: userRoles, defaultRole },
           profile:profile,
           message: 'Account was successfully created',
         };
     }
     
     async createUser(userDetails: CreateUserDto) {
-        // const newUser = this.userRepository.create({
-        //   ...userDetails,
-        //   createdAt: new Date(),
-        // });
-        // return this.userRepository.save(newUser);
-        return userDetails;
+        const newUser = this.userRepository.create({
+          ...userDetails,
+          firstname: userDetails.fname,
+          lastname: userDetails.lname,
+          created_at: new Date(),
+        });
+
+        return this.userRepository.save(newUser);
     }
     
+    async addRoleAndDefaultRole(user, role) {
+      const userRole = this.userRoleRepository.create({
+        user: user,
+        role: role,
+        is_default: true,
+      });
+      return this.userRoleRepository.save(userRole);
+    }
     async createUserProfile(user_id: number, userProfileDetails: CreateUserProfileDto) {
-        // const newUserProfile = this.userProfileRepository.create({
-        //   ...userProfileDetails,
-        // });
-        // return this.userProfileRepository.save(newUserProfile);
-
-        return userProfileDetails;
+        const newUserProfile = this.userProfileRepository.create({
+          ...userProfileDetails,
+        });
+        return this.userProfileRepository.save(newUserProfile);
     }
 
     async checkUserAccountEmailExists(email: string): Promise<void> {

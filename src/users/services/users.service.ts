@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Profile } from 'src/typeorm/entities/Profile';
 import { User } from 'src/typeorm/entities/User';
+import { UserRole } from 'src/typeorm/entities/UserRole';
 import { Repository } from 'typeorm';
 
 // export type User = any;
@@ -11,6 +12,7 @@ export class UsersService {
     constructor(
         @InjectRepository(User) private userRepository: Repository<User>,
         @InjectRepository(Profile) private profileRepository: Repository<Profile>,        
+        @InjectRepository(UserRole) private userRoleRepository: Repository<UserRole>,        
     ) {}
 
       
@@ -51,7 +53,12 @@ export class UsersService {
         if (user) return true;
         return false;
     }
-    
 
+    async getUserRoles(userId: number): Promise<UserRole[]> {
+        return await this.userRoleRepository.find({
+          where: { user: { id: userId } },
+          relations: ['role'],
+        });
+    }
     
 }

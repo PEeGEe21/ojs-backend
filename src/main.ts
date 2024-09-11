@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { config } from './config';
+import { SeederService } from './seeder/seeder.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,7 +14,7 @@ async function bootstrap() {
       config.env === 'development'
         ? '*'
         : [
-            'https://nlp-exam-frontend.vercel.app',
+            'https://ojs-frontend.vercel.app',
           ],
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   };
@@ -27,6 +28,10 @@ async function bootstrap() {
     .addBearerAuth()
     .setExternalDoc('Examination System API & Examination System Postman Collection', '/api/docs-json')
     .build();
+
+
+  const seederService = app.get(SeederService);
+  await seederService.seedRoles();
   
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);

@@ -11,24 +11,6 @@ export class Profile {
   user: User;
 
   @Column({
-    nullable: true
-  })
-  firstname?: string;
-
-  @Column({
-    nullable: true
-  })
-  lastname?: string;
-
-  @Column({
-    default: '',
-  })
-  username?: string;
-
-  @Column()
-  email: string;
-
-  @Column({
     default: '',
   })
   phonenumber?: string;
