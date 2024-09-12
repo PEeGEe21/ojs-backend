@@ -7,6 +7,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Exclude, Expose } from 'class-transformer';
 import { Profile } from './Profile';
 import { UserRole } from './UserRole';
 
@@ -31,9 +32,11 @@ export class User {
   @Column({ unique: true})
   email: string;
 
+  @Exclude()
   @Column()
   password: string;
 
+  @Exclude()
   @Column()
   created_at: Date;
 
@@ -51,4 +54,12 @@ export class User {
   @OneToMany(() => UserRole, (userRole) => userRole.user)
   userRoles: UserRole[];
 
+  @Expose()
+  get fullName(): string {
+    return `${this.firstname} ${this.lastname}`;
+  }
+
+  constructor(partial: Partial<User>) {
+    Object.assign(this, partial);
+  }
 }

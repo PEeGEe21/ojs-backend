@@ -25,6 +25,7 @@ export class UserRole {
     //   @JoinColumn({ name: 'role_id' })
     //   role: Role;
     @ManyToOne(() => Role, (role) => role.userRoles)
+    @JoinColumn({ name: 'role_id' })
     role: Role;
 
     @Column({ default: false })
