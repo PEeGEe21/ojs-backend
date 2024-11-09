@@ -1,0 +1,21 @@
+import { Module } from '@nestjs/common';
+import { JournalsService } from './services/journals.service';
+import { JournalsController } from './controllers/journals.controller';
+import { UsersService } from 'src/users/services/users.service';
+import { SanitizerService } from 'src/core/utils/SanitizerService';
+import { User } from 'src/typeorm/entities/User';
+import { Profile } from 'src/typeorm/entities/Profile';
+import { Role } from 'src/typeorm/entities/Role';
+import { UserRole } from 'src/typeorm/entities/UserRole';
+import { Submission } from 'src/typeorm/entities/Submission';
+import { SubmissionFile } from 'src/typeorm/entities/SubmissionFIle';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Journal } from 'src/typeorm/entities/Journal';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([User, Profile, Role, UserRole, Submission, SubmissionFile, Journal])],
+  providers: [JournalsService, UsersService, SanitizerService],
+  controllers: [JournalsController],
+  exports: [JournalsService]
+})
+export class JournalsModule {}

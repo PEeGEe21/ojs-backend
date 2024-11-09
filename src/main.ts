@@ -10,12 +10,12 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   const corsOptions = {
-    origin:
-      config.env === 'development'
-        ? '*'
-        : [
-            'https://ojs-frontend.vercel.app',
-          ],
+    // origin:
+    //   config.env === 'development'
+    //     ? '*'
+        // : [
+        //     'https://ojs-frontend.vercel.app',
+        //   ],
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   };
   app.enableCors(corsOptions); // TODO: Setup cors config based on FE's server IPs
@@ -31,7 +31,9 @@ async function bootstrap() {
 
 
   const seederService = app.get(SeederService);
-  await seederService.seedRoles();
+  // await seederService.seedRoles();
+  // await seederService.seedJournals();
+  // await seederService.seedSubmissions();
   
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);

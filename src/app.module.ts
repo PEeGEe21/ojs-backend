@@ -11,6 +11,11 @@ import { config } from './config';
 import { SeederService } from './seeder/seeder.service';
 import { UserRole } from './typeorm/entities/UserRole';
 import { Role } from './typeorm/entities/Role';
+import { SubmissionsModule } from './submissions/submissions.module';
+import { Submission } from './typeorm/entities/Submission';
+import { SubmissionFile } from './typeorm/entities/SubmissionFIle';
+import { JournalsModule } from './journals/journals.module';
+import { Journal } from './typeorm/entities/Journal';
 
 @Module({
   imports: [
@@ -22,13 +27,15 @@ import { Role } from './typeorm/entities/Role';
       username: config.db.username,
       password: config.db.password,
       database: config.db.name,
-      entities: [User, Profile, Role, UserRole],
+      entities: [User, Profile, Role, UserRole, Submission, SubmissionFile, Journal],
       synchronize: true,
       autoLoadEntities:true
     }),
-    TypeOrmModule.forFeature([Role]), // Ensure Role is added here
+    TypeOrmModule.forFeature([User, UserRole, Profile, Role, Submission, SubmissionFile, Journal]), // Ensure Role is added here
     AuthModule, 
-    UsersModule
+    UsersModule, 
+    SubmissionsModule, 
+    JournalsModule
   ],
   controllers: [AppController],
   providers: [AppService, SeederService],

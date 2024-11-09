@@ -43,6 +43,7 @@ export class AuthService {
       ): Promise<LoginResponseDto> {
         
         try {
+          console.log(user, 'dfd')
             if (!user) {
                 throw new UnauthorizedException(
                     'SignIn Failed!, Incorrect login credentials',
@@ -56,14 +57,21 @@ export class AuthService {
             const isCorrectPassword = await bcrypt.compare(password, userPassword);
 
             if (!isCorrectPassword) {
+              // return {
+              //   error: 'error',
+              //   message: 'Invalid password',
+              // }
                 throw new BadRequestException(
                     'SignIn Failed!, Incorrect login credentials',
                 );
             }
             
+          console.log(user, 'dfd')
+
 
             const userRoles = await this.usersService.getUserRoles(user.id);
-            const defaultRole = userRoles.find(role => role.is_default) || null;
+            console.log(userRoles,' eeffef')
+            const defaultUserRole = userRoles.find(role => role.is_default) || null;
 
             const payload = {
                 email: user.email,
@@ -76,12 +84,19 @@ export class AuthService {
                 access_token: await this.jwtService.signAsync(payload),
                 success: 'success',
                 message: 'Logged in successfully',
-                user: { ...user, roles: userRoles, defaultRole },
+                user: { 
+                  ...user, 
+                  roles: userRoles,
+                  defaultRole: defaultUserRole.role, 
+                  user_default_role: defaultUserRole.role.name,
+                  user_default_role_id: defaultUserRole.role.id  
+                },
             };
 
             return response;
 
         } catch (error) {
+          console.log(error, 'Error')
             throw new Error('Error Occured while signing');
         }
         
