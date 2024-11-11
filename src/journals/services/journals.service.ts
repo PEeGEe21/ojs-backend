@@ -141,57 +141,57 @@ export class JournalsService {
     async update(id: number, updateJournalDto: UpdateJournalDto) {
         try{
     
-          const user = await this.usersService.getUserAccountById(updateJournalDto.userId)
-    
-          if (!user) {
-              throw new NotFoundException('User not found');
-          }
-
-          const editor = await this.usersService.getUserAccountById(updateJournalDto.editorId)
-          if (!editor) {
-              throw new NotFoundException('User not found');
-          }
-    
-          const journal = await this.journalsRepository.findOne({where:{ id }});
-          if (!journal) {
-            throw new NotFoundException('User not found');
-          }
-    
-          // console.log(optionType, difficultyType)
-          const sanitizedAbstract = this.sanitizerService.sanitizeInput(updateJournalDto.note);
-          // console.log(sanitizedQuestion, questionData.question, 'questionData.question');
-          // return;
-    
-          const updatedFields = {
-            name: updateJournalDto.name,
-            userId: updateJournalDto.userId,
-            editorId: updateJournalDto.editorId ,
-            note: updateJournalDto.note,
-            notePlain: sanitizedAbstract,
-            slug: updateJournalDto.slug,
-            user:user,
-            editor:editor
-        }
-    
-          const update = await this.journalsRepository.update({ id }, updatedFields);
-    
-          console.log(update)
-          if(update.affected < 1){
-            return {
-                error:'error',
-                message: 'An error has occurred'
+            const user = await this.usersService.getUserAccountById(updateJournalDto.userId)
+        
+            if (!user) {
+                throw new NotFoundException('User not found');
             }
-        }
+
+            const editor = await this.usersService.getUserAccountById(updateJournalDto.editorId)
+            if (!editor) {
+                throw new NotFoundException('User not found');
+            }
+        
+            const journal = await this.journalsRepository.findOne({where:{ id }});
+            if (!journal) {
+                throw new NotFoundException('User not found');
+            }
+        
+            // console.log(optionType, difficultyType)
+            const sanitizedAbstract = this.sanitizerService.sanitizeInput(updateJournalDto.note);
+            // console.log(sanitizedQuestion, questionData.question, 'questionData.question');
+            // return;
+        
+            const updatedFields = {
+                name: updateJournalDto.name,
+                userId: updateJournalDto.userId,
+                editorId: updateJournalDto.editorId ,
+                note: updateJournalDto.note,
+                notePlain: sanitizedAbstract,
+                slug: updateJournalDto.slug,
+                user:user,
+                editor:editor
+            }
     
-          const newJournal = await this.journalsRepository.findOne({where:{ id }});
+            const update = await this.journalsRepository.update({ id }, updatedFields);
+        
+            console.log(update)
+            if(update.affected < 1){
+                return {
+                    error:'error',
+                    message: 'An error has occurred'
+                }
+            }
     
-          console.log(newJournal, 'newJournal')
-          
-          let data = {
-              success: 'success',
-              submission: newJournal,
-          };
-          return data;
+            const newJournal = await this.journalsRepository.findOne({where:{ id }});
+        
+            console.log(newJournal, 'newJournal')
+            
+            let data = {
+                success: 'success',
+                submission: newJournal,
+            };
+            return data;
     
         } catch (err) {
             let data = {

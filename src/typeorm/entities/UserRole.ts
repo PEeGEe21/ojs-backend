@@ -17,6 +17,12 @@ export class UserRole {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Column({ type: 'int', name: 'userId', nullable: true })
+    userId: number;
+
+    @Column({ type: 'int', name: 'roleId', nullable: true })
+    roleId: number;
+
     @ManyToOne(() => User, (user) => user.userRoles)
     @JoinColumn({ name: 'user_id' })
     user: User;

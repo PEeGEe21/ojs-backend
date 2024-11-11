@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { JournalsService } from './services/journals.service';
 import { JournalsController } from './controllers/journals.controller';
 import { UsersService } from 'src/users/services/users.service';
@@ -11,9 +11,15 @@ import { Submission } from 'src/typeorm/entities/Submission';
 import { SubmissionFile } from 'src/typeorm/entities/SubmissionFIle';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Journal } from 'src/typeorm/entities/Journal';
+import { AuthModule } from 'src/auth/auth.module';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Profile, Role, UserRole, Submission, SubmissionFile, Journal])],
+  imports: [
+    forwardRef(() => AuthModule),  // Import AuthModule here
+    forwardRef(() => UsersModule), // Import UsersModule if needed
+    TypeOrmModule.forFeature([User, Profile, Role, UserRole, Submission, SubmissionFile, Journal])
+  ],
   providers: [JournalsService, UsersService, SanitizerService],
   controllers: [JournalsController],
   exports: [JournalsService]

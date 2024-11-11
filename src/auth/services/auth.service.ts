@@ -33,6 +33,8 @@ export class AuthService {
         if (!user)
             throw new HttpException('User not found.', HttpStatus.BAD_REQUEST);
 
+        await this.usersService.checkAccountActiveStatus(user.id);
+
         if (user) return this.loginUser(user, password);
         return this.loginUser(user, password);
     }
@@ -57,10 +59,6 @@ export class AuthService {
             const isCorrectPassword = await bcrypt.compare(password, userPassword);
 
             if (!isCorrectPassword) {
-              // return {
-              //   error: 'error',
-              //   message: 'Invalid password',
-              // }
                 throw new BadRequestException(
                     'SignIn Failed!, Incorrect login credentials',
                 );
@@ -89,7 +87,9 @@ export class AuthService {
                   roles: userRoles,
                   defaultRole: defaultUserRole.role, 
                   user_default_role: defaultUserRole.role.name,
-                  user_default_role_id: defaultUserRole.role.id  
+                  user_default_role_id: defaultUserRole.role.id,  
+                  rolesIds : userRoles.map((role) => role.roleId)
+
                 },
             };
 
@@ -106,22 +106,21 @@ export class AuthService {
         userdetails: CreateUserDto,
       ): Promise<SignUpResponseDto> {
     
-        if(!userdetails.email || !userdetails.password){
+        // if(!userdetails.email || !userdetails.password  || !userdetails.cpassword){
+        if(!userdetails.email){
             throw new BadRequestException(
-              `password and email fields are required`,
+              `email field is required`,
             );
         }
-        console.log(userdetails, 'herer');
+
+        await this.validatePasswords(userdetails.password, userdetails.cpassword)
+        // console.log(userdetails, 'herer');
         // return;
     
         await this.checkUserAccountEmailExists(userdetails.email);
     
         if (userdetails.password) {
-          const saltOrRounds = 10;
-          userdetails.password = await bcrypt.hash(
-            userdetails.password,
-            saltOrRounds,
-          );
+          userdetails.password = await this.hashPassword(userdetails.password);
         }
         const user: any = await this.createUser(userdetails);
     
@@ -131,11 +130,12 @@ export class AuthService {
           profile_created: 1
         };
 
-        const role = await this.roleRepository.findOneBy({ id: userdetails.signup_as });
-        if (!role) throw new Error('Role not found');
+        if(userdetails.signup_as){
+          const role = await this.roleRepository.findOneBy({ id: userdetails.signup_as });
+          if (!role) throw new Error('Role not found');
 
-        await this.addRoleAndDefaultRole(user, role);
-
+          await this.addRoleAndDefaultRole(user, role);
+        }
     
         const userProfileDetails = await this.createUserProfile(user.id, userprofilepayload)
     
@@ -152,8 +152,10 @@ export class AuthService {
 
 
         const userRoles = await this.usersService.getUserRoles(user.id);
+        // if(userRoles.length > 0)
         const defaultRole = userRoles.find(role => role.is_default) || null;
 
+        console.log(userRoles, defaultRole)
         // if (config.env === 'production') {
         //   const data = {
         //     env: 'Production',
@@ -172,6 +174,42 @@ export class AuthService {
           message: 'Account was successfully created',
         };
     }
+
+    // Password validation function
+    async validatePasswords(password: string | undefined, confirmPassword: string | undefined): Promise<void> {
+      // Check if either password is missing
+      if (!password || !confirmPassword) {
+          throw new HttpException(
+              'Both password and confirm password are required',
+              HttpStatus.BAD_REQUEST
+          );
+      }
+
+      // Check if passwords match
+      if (password !== confirmPassword) {
+          throw new HttpException(
+              'Passwords do not match',
+              HttpStatus.BAD_REQUEST
+          );
+      }
+
+      // Optional: Add additional password strength validation
+      if (password.length < 8) {
+          throw new HttpException(
+              'Password must be at least 8 characters long',
+              HttpStatus.BAD_REQUEST
+          );
+      }
+    }
+
+    async hashPassword(password){
+      const saltOrRounds = 10;
+      const hashedPassword = await bcrypt.hash(
+        password,
+        saltOrRounds,
+      );
+      return hashedPassword;
+    }
     
     async createUser(userDetails: CreateUserDto) {
         const newUser = this.userRepository.create({
@@ -184,11 +222,13 @@ export class AuthService {
         return this.userRepository.save(newUser);
     }
     
-    async addRoleAndDefaultRole(user, role) {
+    async addRoleAndDefaultRole(user, role, isDefault = true) {
       const userRole = this.userRoleRepository.create({
         user: user,
         role: role,
-        is_default: true,
+        userId: user.id,
+        roleId: role.id,
+        is_default: isDefault,
       });
       return this.userRoleRepository.save(userRole);
     }
@@ -204,7 +244,7 @@ export class AuthService {
           await this.usersService.checkUserAccountEmailExists(email);
         if (userAccountExists) {
           throw new ConflictException(
-            'An account with this email exists, use a different email',
+            'An account with this email exists!',
           );
         }
     }
