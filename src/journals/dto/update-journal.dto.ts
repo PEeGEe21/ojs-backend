@@ -3,8 +3,8 @@ import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 import { CreateJournalDto } from './create-journal.dto';
 
 export class UpdateJournalDto extends PartialType(CreateJournalDto) {
-    @IsNumber()
-    id: number;
+    // @IsNumber()
+    // id: number;
 
     @IsNumber()
     userId: number;
@@ -20,4 +20,7 @@ export class UpdateJournalDto extends PartialType(CreateJournalDto) {
     notePlain?: string;
     
     slug?: string;
+    
+    accronym?: string;
+    file_name?: string;
 }

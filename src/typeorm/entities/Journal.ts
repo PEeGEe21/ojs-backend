@@ -18,6 +18,9 @@ export class Journal {
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   file_url: string;
+  
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  file_name: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   accronym: string;
@@ -31,8 +34,8 @@ export class Journal {
   @Column({ type: 'longtext', nullable: true})
   notePlain: string;
 
-  @Column({ type: 'int', default: 1})
-  status: number;
+  @Column({ type: 'int', default: true})
+  status: boolean;
 
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
   createdAt: Date;

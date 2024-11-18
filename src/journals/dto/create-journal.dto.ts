@@ -12,7 +12,12 @@ export class CreateJournalDto {
 
     note?: string; 
     
-    notePlain?: string;
+    // notePlain?: string;
 
     slug?: string;
+
+    accronym?: string;
+
+    file_url?: string;
+    file_name?: string;
 }

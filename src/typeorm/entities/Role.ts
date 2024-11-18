@@ -13,6 +13,9 @@ export class Role {
   @Column({nullable: true })
   description: string;
 
+  @Column({ default: true })
+  is_active: boolean;
+
   @ManyToOne(() => UserRole, (userRole) => userRole.role)
   userRoles: UserRole[];
 }

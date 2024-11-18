@@ -5,6 +5,11 @@ import { UsersService } from '../services/users.service';
 export class UsersController {
     constructor(private usersService: UsersService) {}
 
+    @Get('/init-data')
+    initData() {
+        return this.usersService.initData();
+    }
+
     @Get('/')
     findAll() {
         return this.usersService.findAll();
@@ -14,7 +19,6 @@ export class UsersController {
     remove(@Param('id') id: number) {
         return this.usersService.delete(+id);
     }
-
 
     @Get('/:user_id/submissions')
     getUserSubmissions(@Param('user_id', ParseIntPipe) user_id: number) {
@@ -52,4 +56,39 @@ export class UsersController {
     ): Promise<any> {
         return this.usersService.updateUserStatus(user_id);
     }
+
+
+    // roles
+    @Get('/roles')
+    findAllRoles() {
+        return this.usersService.findAllRoles();
+    }
+
+    @Delete('delete/roles/:id')
+    removeRole(@Param('id') id: number) {
+        return this.usersService.deleteRole(+id);
+    }
+
+    @Post('/roles/add-role')
+    async createRole(
+        @Body() roleCreateDto: any,
+    ): Promise<any> {
+        return this.usersService.createRole(roleCreateDto);
+    }
+
+    @Post('/roles/update-active-status/:role_id')
+    async updateRoleStatus(
+        @Param('role_id', ParseIntPipe) role_id: number,
+    ): Promise<any> {
+        return this.usersService.updateRoleStatus(role_id);
+    }
+
+    @Post('/roles/update-role/:role_id')
+    async updateRole(
+        @Param('role_id', ParseIntPipe) role_id: number,
+        @Body() roleUpdateDto: any,
+    ): Promise<any> {
+        return this.usersService.updateRole(role_id, roleUpdateDto);
+    }
+
 }

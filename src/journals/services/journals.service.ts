@@ -9,6 +9,7 @@ import { UsersService } from 'src/users/services/users.service';
 import { Repository } from 'typeorm';
 import { CreateJournalDto } from '../dto/create-journal.dto';
 import { UpdateJournalDto } from '../dto/update-journal.dto';
+import { error } from 'console';
 
 @Injectable()
 export class JournalsService {
@@ -31,6 +32,15 @@ export class JournalsService {
         // return;
         try{
     
+            const journalsCount = await this.journalsRepository.count();
+            // console.log(journals)
+            if(journalsCount > 1){
+                return {
+                    error: 'error',
+                    message: 'You cannot create more than one journal'
+                }
+            }
+
             const user = await this.usersService.getUserAccountById(journalData.userId)
         
             if (!user) {
@@ -65,16 +75,18 @@ export class JournalsService {
                 note: journalData.note,
                 notePlain: sanitizedAbstract,
                 slug: journalData.slug,
+                file_name: journalData.file_name,
+                accronym: journalData.accronym,
                 user:user,
                 editor:editor
             }
 
-            const newJournal = this.submissionsRepository.create(entryFields);
+            const newJournal = this.journalsRepository.create(entryFields);
 
     
     
             console.log(newJournal, 'newJournal')
-            const savedNewJournal = await this.submissionsRepository.save(newJournal);
+            const savedNewJournal = await this.journalsRepository.save(newJournal);
 
             console.log(`journalData has been created`);
             let data = {
@@ -91,6 +103,18 @@ export class JournalsService {
             return data;
         }
     };
+
+    async findActiveJournals() {
+        const journals = await this.journalsRepository.find({ where: {status: true}, relations:['user', 'submissions', 'editor']});
+    
+        const res = {
+            success: 'success',
+            message: 'successful',
+            data: journals,
+        };
+  
+        return res;
+    }
 
     async findAll() {
         const journals = await this.journalsRepository.find({ relations:['user', 'submissions', 'editor']});
@@ -169,6 +193,8 @@ export class JournalsService {
                 note: updateJournalDto.note,
                 notePlain: sanitizedAbstract,
                 slug: updateJournalDto.slug,
+                file_name: updateJournalDto.file_name,
+                accronym: updateJournalDto.accronym,
                 user:user,
                 editor:editor
             }
@@ -189,7 +215,7 @@ export class JournalsService {
             
             let data = {
                 success: 'success',
-                submission: newJournal,
+                journal: newJournal,
             };
             return data;
     
@@ -222,7 +248,31 @@ export class JournalsService {
                     HttpStatus.INTERNAL_SERVER_ERROR,
                 );
         }
-      }
+    }
+
+    async updateJournalStatus(journal_id: number){
+        try{
+            const journal = await this.journalsRepository.findOneBy({ id: journal_id });
+            if(!journal)
+                return{
+                    error: 'error',
+                    message: 'Journal not found'
+                }
+
+            let status = !journal.status;
+            await this.journalsRepository.update({ id: journal.id }, {status: status});
+
+            const data = {
+                success: 'success',
+                message: 'Journal status updated successfully',
+            }
+            return data;
+
+
+        } catch(err){
+
+        }
+    }
     
 
 }
