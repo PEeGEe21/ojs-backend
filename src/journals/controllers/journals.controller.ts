@@ -2,6 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from 
 import { JournalsService } from '../services/journals.service';
 import { CreateJournalDto } from '../dto/create-journal.dto';
 import { UpdateJournalDto } from '../dto/update-journal.dto';
+import { CreateSectionDto } from '../dto/create-section.dto';
+import { UpdateSectionDto } from '../dto/update-section.dto';
 
 @Controller('journals')
 export class JournalsController {
@@ -43,5 +45,30 @@ export class JournalsController {
     ): Promise<any> {
         return this.journalsService.updateJournalStatus(journal_id);
     }
+
+
+
+    // sections
+    @Get('/sections/:journal_id')
+    findJournalSections(@Param('journal_id') journal_id: number) {
+        return this.journalsService.findJournalSections(journal_id);
+    }
+
+    @Post('/sections')
+    createSection(@Body() createSectionDto: CreateSectionDto) {
+        return this.journalsService.createSection(createSectionDto);
+    }
+
+    @Delete('/sections/delete/:id')
+    deleteSection(@Param('id') id: number) {
+        return this.journalsService.deleteSection(+id);
+    }
+
+    @Post('/sections/update-section/:id')
+    updateSection(@Param('id') id: number, @Body() updateSectionDto: UpdateSectionDto) {
+        return this.journalsService.updateSection(+id, updateSectionDto);
+    }
+
+
 
 }

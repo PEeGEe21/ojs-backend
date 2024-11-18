@@ -2,6 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateCol
 import { User } from './User';
 import { SubmissionFile } from './SubmissionFIle';
 import { Journal } from './Journal';
+import { Issue } from './Issue';
 
 @Entity('submissions')
 export class Submission {
@@ -76,4 +77,8 @@ export class Submission {
   @ManyToOne(() => Journal, journal => journal.submissions)
   @JoinColumn({ name: 'journal_id' })
   journal: Journal;
+
+  @ManyToOne(() => Issue, issue => issue.submissions)
+  @JoinColumn({ name: 'issue_id' })
+  issue: Issue;
 }

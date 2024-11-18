@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { User } from './User';
 import { Submission } from './Submission';
+import { Issue } from './Issue';
 
 @Entity('journals')
 export class Journal {
@@ -13,7 +14,7 @@ export class Journal {
   @Column({ type: 'int', name: 'editor_id', nullable: true })
   editorId: number;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'varchar', length: 255, unique: true })
   name: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
@@ -54,5 +55,8 @@ export class Journal {
 
   @OneToMany(() => Submission, (submission) => submission.journal)
   submissions: Submission[];
+
+  @OneToMany(() => Issue, (issue) => issue.journal)
+  issues: Issue[];
 
 }

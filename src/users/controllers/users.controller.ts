@@ -57,38 +57,4 @@ export class UsersController {
         return this.usersService.updateUserStatus(user_id);
     }
 
-
-    // roles
-    @Get('/roles')
-    findAllRoles() {
-        return this.usersService.findAllRoles();
-    }
-
-    @Delete('delete/roles/:id')
-    removeRole(@Param('id') id: number) {
-        return this.usersService.deleteRole(+id);
-    }
-
-    @Post('/roles/add-role')
-    async createRole(
-        @Body() roleCreateDto: any,
-    ): Promise<any> {
-        return this.usersService.createRole(roleCreateDto);
-    }
-
-    @Post('/roles/update-active-status/:role_id')
-    async updateRoleStatus(
-        @Param('role_id', ParseIntPipe) role_id: number,
-    ): Promise<any> {
-        return this.usersService.updateRoleStatus(role_id);
-    }
-
-    @Post('/roles/update-role/:role_id')
-    async updateRole(
-        @Param('role_id', ParseIntPipe) role_id: number,
-        @Body() roleUpdateDto: any,
-    ): Promise<any> {
-        return this.usersService.updateRole(role_id, roleUpdateDto);
-    }
-
 }

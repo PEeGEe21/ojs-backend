@@ -10,6 +10,9 @@ import { Repository } from 'typeorm';
 import { CreateJournalDto } from '../dto/create-journal.dto';
 import { UpdateJournalDto } from '../dto/update-journal.dto';
 import { error } from 'console';
+import { CreateSectionDto } from '../dto/create-section.dto';
+import { UpdateSectionDto } from '../dto/update-section.dto';
+import { Section } from 'src/typeorm/entities/Section';
 
 @Injectable()
 export class JournalsService {
@@ -23,6 +26,7 @@ export class JournalsService {
         @InjectRepository(Submission) private submissionsRepository: Repository<Submission>,
         @InjectRepository(SubmissionFile) private submissionFilesRepository: Repository<SubmissionFile>,
         @InjectRepository(Journal) private journalsRepository: Repository<Journal>,
+        @InjectRepository(Section) private sectionRepository: Repository<Section>,
     
     ) {}
 
@@ -173,16 +177,16 @@ export class JournalsService {
 
             const editor = await this.usersService.getUserAccountById(updateJournalDto.editorId)
             if (!editor) {
-                throw new NotFoundException('User not found');
+                throw new NotFoundException('Editor not found');
             }
         
             const journal = await this.journalsRepository.findOne({where:{ id }});
             if (!journal) {
-                throw new NotFoundException('User not found');
+                throw new NotFoundException('Journal not found');
             }
         
             // console.log(optionType, difficultyType)
-            const sanitizedAbstract = this.sanitizerService.sanitizeInput(updateJournalDto.note);
+            const sanitizedNote = this.sanitizerService.sanitizeInput(updateJournalDto.note);
             // console.log(sanitizedQuestion, questionData.question, 'questionData.question');
             // return;
         
@@ -191,7 +195,7 @@ export class JournalsService {
                 userId: updateJournalDto.userId,
                 editorId: updateJournalDto.editorId ,
                 note: updateJournalDto.note,
-                notePlain: sanitizedAbstract,
+                notePlain: sanitizedNote,
                 slug: updateJournalDto.slug,
                 file_name: updateJournalDto.file_name,
                 accronym: updateJournalDto.accronym,
@@ -225,7 +229,7 @@ export class JournalsService {
             };
             return data;
         }
-      }
+    }
 
 
     async remove(id: number) {
@@ -274,5 +278,149 @@ export class JournalsService {
         }
     }
     
+
+    // sections
+    async findJournalSections(journal_id: number): Promise<any> {
+        const sections = await this.sectionRepository.find({where: { journalId: journal_id }});
+
+        const res = {
+            success: 'success',
+            message: 'successfull',
+            sections
+        };
+  
+        return res;
+    }
+
+    async createSection(createSectionData: CreateSectionDto) : Promise<any> {
+        try{
+
+            const journal = await this.journalsRepository.findOne({ where: {id: createSectionData.journalId, status: true }, });
+            if(!journal)
+                return{
+                    error: 'error',
+                    message: 'Journal not found'
+                }
+
+            const sanitizedPolicy = this.sanitizerService.sanitizeInput(createSectionData.policy);
+
+            const payload = {
+                title: createSectionData.title,
+                abbreviation: createSectionData.abbreviation,
+                policy: createSectionData.policy,
+                policyPlain: sanitizedPolicy,
+                word_count: createSectionData.word_count,
+                identification_text: createSectionData.identification_text,
+                journal: journal,
+                journalId: createSectionData.journalId,
+            }
+
+            const newSection = this.sectionRepository.create(payload);
+
+            const section = await this.sectionRepository.save(newSection);
+
+            const data = {
+                success: 'success',
+                message: 'Section created successfully',
+                section
+            }
+            
+            return data;
+        } catch{
+            throw new HttpException(
+                'Couldnt save the Section!',
+                HttpStatus.BAD_REQUEST
+            );
+        }
+    }
+
+    async updateSection(section_id: number, updateSectionData: UpdateSectionDto) : Promise<any> {
+        try{
+
+            // const journal = await this.journalsRepository.findOneBy({ id: updateSectionData.journalId });
+            // if(!journal)
+            //     return{
+            //         error: 'error',
+            //         message: 'Journal not found'
+            //     }
+
+            const section = await this.sectionRepository.findOneBy({ id: section_id });
+            if(!section)
+                return{
+                    error: 'error',
+                    message: 'Section not found'
+                }
+            let sanitizedPolicy;
+
+            if(updateSectionData.policy){
+                sanitizedPolicy = this.sanitizerService.sanitizeInput(updateSectionData.policy);
+            }
+
+            const updatedFields = {
+                title: updateSectionData.title,
+                abbreviation: updateSectionData.abbreviation,
+                policy: updateSectionData.policy??'',
+                policyPlain: sanitizedPolicy??'',
+                word_count: updateSectionData.word_count,
+                identification_text: updateSectionData.identification_text,
+            }
+
+            const updated = await this.sectionRepository.update({ id: section.id }, updatedFields);
+
+            if(updated.affected < 1)
+                throw new HttpException(
+                    'Couldnt save the Section!',
+                    HttpStatus.BAD_REQUEST
+                );
+
+            const data = {
+                success: 'success',
+                message: 'Section created successfully',
+                section
+            }
+            return data;
+        } catch{
+            throw new HttpException(
+                'Couldnt save the Section!',
+                HttpStatus.BAD_REQUEST
+            );
+        }
+    }
+
+    async findAllSections() {
+        const sections = await this.sectionRepository.find({});
+
+        const res = {
+            success: 'success',
+            message: 'successfull',
+            sections
+        };
+  
+        return res;
+    }
+
+
+    async deleteSection(id: number) {
+        try {
+            const section = await this.sectionRepository.findOne({
+                where: { id },
+            });
+        
+            if (!section) {
+                return { error: 'error', message: 'Section not found' };
+            }
+                
+            await this.sectionRepository.delete(id);
+
+            return { success: 'success', message: 'Section deleted successfully' };
+    
+        } catch (err) {
+            console.error('Error deleting section:', err);
+            throw new HttpException(
+                'Error deleting Section',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
 
 }

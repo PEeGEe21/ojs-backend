@@ -16,6 +16,10 @@ import { Submission } from './typeorm/entities/Submission';
 import { SubmissionFile } from './typeorm/entities/SubmissionFIle';
 import { JournalsModule } from './journals/journals.module';
 import { Journal } from './typeorm/entities/Journal';
+import { RolesModule } from './roles/roles.module';
+import { IssuesModule } from './issues/issues.module';
+import { Issue } from './typeorm/entities/Issue';
+import { Section } from './typeorm/entities/Section';
 
 @Module({
   imports: [
@@ -27,15 +31,17 @@ import { Journal } from './typeorm/entities/Journal';
       username: config.db.username,
       password: config.db.password,
       database: config.db.name,
-      entities: [User, Profile, Role, UserRole, Submission, SubmissionFile, Journal],
+      entities: [User, Profile, Role, UserRole, Submission, SubmissionFile, Journal, Issue, Section],
       synchronize: true,
       autoLoadEntities:true
     }),
-    TypeOrmModule.forFeature([User, UserRole, Profile, Role, Submission, SubmissionFile, Journal]), // Ensure Role is added here
+    TypeOrmModule.forFeature([User, UserRole, Profile, Role, Submission, SubmissionFile, Journal, Issue, Section]), // Ensure Role is added here
     AuthModule, 
     UsersModule, 
     SubmissionsModule, 
-    JournalsModule
+    JournalsModule, 
+    RolesModule, 
+    IssuesModule
   ],
   controllers: [AppController],
   providers: [AppService, SeederService],
