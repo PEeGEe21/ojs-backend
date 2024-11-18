@@ -25,12 +25,13 @@ import { Section } from './typeorm/entities/Section';
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
-      type: config.db.type,
-      host: config.db.host,
-      port: config.db.port,
-      username: config.db.username,
-      password: config.db.password,
-      database: config.db.name,
+      type: 'mysql',
+      host: process.env.DATABASE_HOST,
+      port: Number(process.env.DATABASE_PORT),
+      username: process.env.DATABASE_USERNAME,
+      password: process.env.DATABASE_PASSWORD,
+      database: process.env.DATABASE_NAME,
+      ssl: { rejectUnauthorized: false },
       entities: [User, Profile, Role, UserRole, Submission, SubmissionFile, Journal, Issue, Section],
       synchronize: true,
       autoLoadEntities:true

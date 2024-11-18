@@ -22,11 +22,11 @@ async function bootstrap() {
   // app.use(csurf());
   app.setGlobalPrefix('/api/');
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Examination System')
-    .setDescription('The Examination System API description')
+    .setTitle('Open Journal System')
+    .setDescription('Open Journal System API description')
     .setVersion('1.0')
     .addBearerAuth()
-    .setExternalDoc('Examination System API & Examination System Postman Collection', '/api/docs-json')
+    .setExternalDoc('Open Journal API & Open Journal Postman Collection', '/api/docs-json')
     .build();
 
 
