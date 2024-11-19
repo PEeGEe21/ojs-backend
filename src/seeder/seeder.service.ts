@@ -7,6 +7,7 @@ import { Journal } from 'src/typeorm/entities/Journal';
 import { Role } from 'src/typeorm/entities/Role';
 import { Submission } from 'src/typeorm/entities/Submission';
 import { SubmissionFile } from 'src/typeorm/entities/SubmissionFIle';
+import { User } from 'src/typeorm/entities/User';
 import { UsersService } from 'src/users/services/users.service';
 import { Repository } from 'typeorm';
 
@@ -18,6 +19,7 @@ export class SeederService {
     private authService: AuthService,
     private journalsService: JournalsService,
 
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(Role) private readonly roleRepository: Repository<Role>,
     @InjectRepository(Submission) private readonly submissionRepository: Repository<Submission>,
     @InjectRepository(SubmissionFile) private readonly submissionFileRepository: Repository<SubmissionFile>,
@@ -25,6 +27,8 @@ export class SeederService {
   ) {}
 
   async seedAdmin() {
+    await this.userRepository.delete({});
+
     const users = [
       { 
         fname: process.env.SUPER_FIRSTNAME, 
@@ -36,6 +40,7 @@ export class SeederService {
         signup_as: Number(process.env.SUPER_SIGNUP)
       },      
     ];
+
 
     for (const user of users) {
       const savedData = await this.authService.signUp(user);
