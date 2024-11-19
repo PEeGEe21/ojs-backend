@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CreateUserDto } from 'src/auth/dtos/create-user.dto';
+import { AuthService } from 'src/auth/services/auth.service';
 import { JournalsService } from 'src/journals/services/journals.service';
 import { Journal } from 'src/typeorm/entities/Journal';
 import { Role } from 'src/typeorm/entities/Role';
@@ -13,6 +15,7 @@ export class SeederService {
   constructor(
     
     private usersService: UsersService,
+    private authService: AuthService,
     private journalsService: JournalsService,
 
     @InjectRepository(Role) private readonly roleRepository: Repository<Role>,
@@ -20,6 +23,33 @@ export class SeederService {
     @InjectRepository(SubmissionFile) private readonly submissionFileRepository: Repository<SubmissionFile>,
     @InjectRepository(Journal) private readonly journalRepository: Repository<Journal>,
   ) {}
+
+  async seedAdmin() {
+    const users = [
+      { 
+        fname: process.env.SUPER_FIRSTNAME, 
+        lname: process.env.SUPER_LASTNAME, 
+        username: process.env.SUPER_USERNAME, 
+        email: process.env.SUPER_EMAIL, 
+        password: process.env.SUPER_PASSWORD, 
+        cpassword: process.env.SUPER_PASSWORD,
+        signup_as: Number(process.env.SUPER_SIGNUP)
+      },      
+    ];
+
+    for (const user of users) {
+      const savedData = await this.authService.signUp(user);
+      if(savedData.success == 'success'){
+        const data = {
+            success: 'success',
+            message: 'User created successfully',
+        }
+        return data
+      }
+    }
+
+    console.log('Admin seeding completed');
+  }
 
   async seedJournals() {
     const journals = [

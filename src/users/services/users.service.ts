@@ -190,11 +190,18 @@ export class UsersService {
 
     async createUser(userdetails: CreateUserDto){
         const savedData = await this.authService.signUp(userdetails);
-        const data = {
-            success: 'success',
-            message: 'User created successfully',
+        if(savedData.success == 'success'){
+            const data = {
+                success: 'success',
+                message: 'User created successfully',
+            }
+            return data
         }
-        return data
+
+        throw new HttpException(
+            'Please Choose a Default Role!',
+            HttpStatus.BAD_REQUEST
+        );
     }
 
     async updateUser(user_id: number, userdetails: UpdateUserDto){
