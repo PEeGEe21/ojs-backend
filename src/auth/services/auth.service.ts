@@ -87,7 +87,7 @@ export class AuthService {
                   roles: userRoles,
                   defaultRole: defaultUserRole.role, 
                   user_default_role: defaultUserRole.role.name,
-                  user_default_role_id: defaultUserRole.role.id,  
+                  user_default_role_id: Number(defaultUserRole.role.id),  
                   rolesIds : userRoles.map((role) => role.roleId)
 
                 },
