@@ -32,7 +32,7 @@ async function bootstrap() {
 
   const seederService = app.get(SeederService);
   // await seederService.seedRoles();
-  await seederService.seedAdmin();
+  // await seederService.seedAdmin();
   // await seederService.seedJournals();
   // await seederService.seedSubmissions();
   
