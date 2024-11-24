@@ -13,6 +13,7 @@ import { error } from 'console';
 import { CreateSectionDto } from '../dto/create-section.dto';
 import { UpdateSectionDto } from '../dto/update-section.dto';
 import { Section } from 'src/typeorm/entities/Section';
+import { Issue } from 'src/typeorm/entities/Issue';
 
 @Injectable()
 export class JournalsService {
@@ -27,6 +28,7 @@ export class JournalsService {
         @InjectRepository(SubmissionFile) private submissionFilesRepository: Repository<SubmissionFile>,
         @InjectRepository(Journal) private journalsRepository: Repository<Journal>,
         @InjectRepository(Section) private sectionRepository: Repository<Section>,
+        @InjectRepository(Issue) private issuesRepository: Repository<Issue>,
     
     ) {}
 
@@ -276,6 +278,29 @@ export class JournalsService {
         } catch(err){
 
         }
+    }
+
+    async findActiveJournalIssues(journal_id: number): Promise<any> {
+        const issues = await this.issuesRepository.find({where: { journalId: journal_id, status: true}});
+        const res = {
+            success: 'success',
+            message: 'successfull',
+            issues
+        };
+  
+        return res;
+    }
+    
+
+    async findJournalIssues(journal_id: number): Promise<any> {
+        const issues = await this.issuesRepository.find({where: { journalId: journal_id}});
+        const res = {
+            success: 'success',
+            message: 'successfull',
+            issues
+        };
+  
+        return res;
     }
     
 

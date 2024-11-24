@@ -46,6 +46,20 @@ export class JournalsController {
         return this.journalsService.updateJournalStatus(journal_id);
     }
 
+    @Get('/issues/:journal_id')
+    async findActiveJournalIssues(
+        @Param('journal_id', ParseIntPipe) journal_id: number,
+    ): Promise<any> {
+        return this.journalsService.findActiveJournalIssues(journal_id);
+    }
+
+    @Get('/all-issues/:journal_id')
+    async findJournalIssues(
+        @Param('journal_id', ParseIntPipe) journal_id: number,
+    ): Promise<any> {
+        return this.journalsService.findJournalIssues(journal_id);
+    }
+
 
 
     // sections

@@ -24,6 +24,37 @@ export class SubmissionsController {
     return this.submissionsService.create(createSubmissionDto);
   }
 
+  @Post('/assign-issue')
+  assignIssue(@Body() attachData: any) {
+    return this.submissionsService.assignIssue(attachData);
+  }
+
+  @Post('admin/:id/update-issue')
+  updateSubmissionSection(
+    @Param('id') id: number,
+    @Body() updateSubmissionDto: any) {
+    return this.submissionsService.updateSubmissionSection(id, updateSubmissionDto);
+  }
+
+  @Post('admin/:id/update-title')
+  updateSubmissionTitle(
+    @Param('id') id: number,
+    @Body() updateSubmissionDto: any) {
+    return this.submissionsService.updateSubmissionTitle(id, updateSubmissionDto);
+  }
+
+  @Post('/assign-editor')
+  attachEditor(@Body() attachData: any) {
+    return this.submissionsService.attachEditor(attachData);
+  }
+
+  @Delete('remove-editor/:editorId/:submissionId')
+  removeAttachment(
+    @Param('editorId') editorId: number,
+    @Param('submissionId') submissionId: number) {
+    return this.submissionsService.removeEditor(editorId, submissionId);
+  }
+
   @Get()
   findAll() { 
     return this.submissionsService.findAll();
@@ -32,6 +63,11 @@ export class SubmissionsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.submissionsService.findOne(+id);
+  }
+
+  @Get(':id/files')
+  findSubmissionFiles(@Param('id') id: number) {
+    return this.submissionsService.findSubmissionFiles(+id);
   }
 
   @Patch(':id')

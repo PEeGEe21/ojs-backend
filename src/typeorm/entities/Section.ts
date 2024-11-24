@@ -9,6 +9,7 @@ import {
   JoinColumn 
 } from 'typeorm';
 import { Journal } from './Journal';
+import { Submission } from './Submission';
 
 @Entity('sections')
 export class Section {
@@ -46,5 +47,9 @@ export class Section {
   @ManyToOne(() => Journal)
   @JoinColumn({ name: 'journal_id' })
   journal: Journal;
+
+  @OneToMany(() => Submission, (submission) => submission.section)
+  // @JoinColumn({ name: 'section_id' })
+  submissions: Submission[];
 
 }

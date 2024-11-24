@@ -3,6 +3,8 @@ import { User } from './User';
 import { SubmissionFile } from './SubmissionFIle';
 import { Journal } from './Journal';
 import { Issue } from './Issue';
+import { SubmissionEditor } from './SubmissionEditor';
+import { Section } from './Section';
 
 @Entity('submissions')
 export class Submission {
@@ -60,6 +62,15 @@ export class Submission {
   @Column({ type: 'int', default: 0})
   status: number;
 
+  @Column({ type: 'int', nullable: true })
+  pages: number;
+
+  @Column({ type: 'varchar', nullable: true })
+  url_path: string;
+
+  @Column({ type: 'date', name: 'date_published', nullable: true })
+  datePublished: Date;
+
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
   createdAt: Date;
 
@@ -74,6 +85,9 @@ export class Submission {
   @OneToMany(() => SubmissionFile, (submission) => submission.submission)
   files: SubmissionFile[];
 
+  @OneToMany(() => SubmissionEditor, (editor) => editor.submission)
+  editors: SubmissionEditor[];
+
   @ManyToOne(() => Journal, journal => journal.submissions)
   @JoinColumn({ name: 'journal_id' })
   journal: Journal;
@@ -81,4 +95,8 @@ export class Submission {
   @ManyToOne(() => Issue, issue => issue.submissions)
   @JoinColumn({ name: 'issue_id' })
   issue: Issue;
+
+  @ManyToOne(() => Section, section => section.submissions)
+  @JoinColumn({ name: 'section_id' })
+  section: Section;
 }

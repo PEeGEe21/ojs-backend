@@ -13,12 +13,15 @@ import { SanitizerService } from 'src/core/utils/SanitizerService';
 import { Journal } from 'src/typeorm/entities/Journal';
 import { AuthModule } from 'src/auth/auth.module';
 import { UsersModule } from 'src/users/users.module';
+import { SubmissionEditor } from 'src/typeorm/entities/SubmissionEditor';
+import { Issue } from 'src/typeorm/entities/Issue';
+import { Section } from 'src/typeorm/entities/Section';
 
 @Module({
   imports: [
     forwardRef(() => AuthModule),  // Import AuthModule here
     forwardRef(() => UsersModule), // Import UsersModule if needed
-    TypeOrmModule.forFeature([User, Profile, Role, UserRole, Submission, SubmissionFile, Journal])],
+    TypeOrmModule.forFeature([User, Profile, Role, UserRole, Submission, SubmissionFile, Journal, SubmissionEditor, Issue, Section])],
   controllers: [SubmissionsController],
   providers: [SubmissionsService, UsersService, SanitizerService],
   exports: [SubmissionsService]

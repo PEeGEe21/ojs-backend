@@ -5,12 +5,15 @@ import { UsersService } from 'src/users/services/users.service';
 import { SanitizerService } from 'src/core/utils/SanitizerService';
 import { User } from 'src/typeorm/entities/User';
 import { Submission } from 'src/typeorm/entities/Submission';
-import { Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SubmissionFile } from 'src/typeorm/entities/SubmissionFIle';
 import { CreateSubmissionFirstStepDto } from '../dto/create-submission-first-step.dto';
 import { CreateSubmissionFinalSaveDto } from '../dto/create-submission-final-save.dto';
 import { Journal } from 'src/typeorm/entities/Journal';
+import { SubmissionEditor } from 'src/typeorm/entities/SubmissionEditor';
+import { Issue } from 'src/typeorm/entities/Issue';
+import { Section } from 'src/typeorm/entities/Section';
 
 @Injectable()
 export class SubmissionsService {
@@ -24,6 +27,9 @@ export class SubmissionsService {
     @InjectRepository(Submission) private submissionsRepository: Repository<Submission>,
     @InjectRepository(SubmissionFile) private submissionFilesRepository: Repository<SubmissionFile>,
     @InjectRepository(Journal) private journalsRepository: Repository<Journal>,
+    @InjectRepository(SubmissionEditor) private submissionsEditorRepository: Repository<SubmissionEditor>,
+    @InjectRepository(Issue) private issuesRepository: Repository<Issue>,
+    @InjectRepository(Section) private sectionsRepository: Repository<Section>,
 
 ) {}
 
@@ -102,7 +108,7 @@ export class SubmissionsService {
 
       const submission = await this.submissionsRepository.findOne({where:{ id: submissionData.id }});
       if (!submission) {
-        throw new NotFoundException('User not found');
+        throw new NotFoundException('Submission not found');
       }
 
       // console.log(optionType, difficultyType)
@@ -214,20 +220,183 @@ export class SubmissionsService {
     try {
       const submission = await this.submissionsRepository.findOne({
           where: { id },
-          relations: ['user', 'files'],
+          relations: ['user', 'files', 'editors', 'editors.editor', 'issue', 'section'],
       });
 
       if (!submission)
           throw new HttpException('Question not found', HttpStatus.BAD_REQUEST);
-  
+      
+      // Get all users attached to this submission
+      const attachedUsers = await this.submissionsEditorRepository.find({
+          where: { submissionId: submission.id },
+          relations: ['editor'],
+      });
+
+      // Extract IDs of attached users
+      const attachedUserIds = attachedUsers.map((user) => user.editor.id);
+
+      // Get all users not attached to this submission
+      const unattachedUsers = await this.usersRepository.find({
+          where: { id: Not(In(attachedUserIds)) },
+      });
+
+      // const sections
       let data = {
           submission,
+          users:unattachedUsers,
+          success: 'success',
+      };
+      return data;
+
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  async findSubmissionFiles(id: number) {
+    try {
+      const submission = await this.submissionsRepository.findOne({
+          where: { id },
+      });
+      if (!submission)
+          throw new HttpException('Question not found', HttpStatus.BAD_REQUEST);
+  
+      const submissionFiles = await this.submissionFilesRepository.find({
+        where: { submission: submission },
+      });
+
+      let data = {
+          submissionFiles,
           success: 'success',
       };
       return data;
 
     } catch (err) {}
   }
+
+  async assignIssue(attachData: any): Promise<any> {
+    try{
+
+      const submission = await this.submissionsRepository.findOne({where:{ id: attachData.submissionId }});
+      if (!submission) {
+        throw new NotFoundException('Submission not found');
+      }
+
+      const issue = await this.issuesRepository.findOne({where:{ id: attachData.issueId }});
+      if (!issue) {
+        throw new NotFoundException('Issue not found');
+      }
+      
+      const updatedFields = {
+        issue: issue,
+      }
+
+      const update = await this.submissionsRepository.update({ id: attachData.submissionId }, updatedFields);
+
+      if(update.affected < 1){
+        return {
+            error:'error',
+            message: 'An error occurred'
+        }
+      }
+
+      let data = {
+        success: 'success',
+      };
+      return data;
+
+
+    } catch (err) {
+        let data = {
+            error: err.message,
+        };
+        return data;
+    }
+  };
+
+  async attachEditor(attachData: any): Promise<any> {
+    try{
+
+      const user = await this.usersService.getUserAccountById(attachData.editorId)
+
+      if (!user) {
+          throw new NotFoundException('User not found');
+      }
+
+      const submission = await this.submissionsRepository.findOne({where:{ id: attachData.submissionId }});
+      if (!submission) {
+        throw new NotFoundException('Submission not found');
+      }
+
+      const sanitizedNote = this.sanitizerService.sanitizeInput(attachData.note);
+
+      const saveFields = {
+        editorId: user.id,
+        editor: user,
+        submissionId: submission.id,
+        submission: submission,
+        note: attachData.note,
+        notePlain: sanitizedNote,
+      }
+
+      const checkAttaachment = await this.submissionsEditorRepository.findOne({where: {submissionId: submission.id, editor: user}});
+
+      if(!checkAttaachment){
+        const savedAttach = this.submissionsEditorRepository.create(saveFields);
+
+        const newAttachMent = await this.submissionsEditorRepository.save(savedAttach);
+        
+      }
+
+      let data = {
+        success: 'success',
+      };
+      return data;
+
+
+    } catch (err) {
+        let data = {
+            error: err.message,
+        };
+        return data;
+    }
+  };
+
+  async removeEditor(editorId: any, submissionId: any ): Promise<any> {
+    try{
+
+      const user = await this.usersService.getUserAccountById(editorId)
+
+      if (!user) {
+          throw new NotFoundException('User not found');
+      }
+
+      console.log(editorId, user)
+      const submission = await this.submissionsRepository.findOne({where:{ id: submissionId }});
+      if (!submission) {
+        throw new NotFoundException('Submission not found');
+      }
+
+      const savedAttach = await this.submissionsEditorRepository.findOne({where: {  submissionId: submission.id, editor: user}});
+
+      // console.log(savedAttach)
+      // return
+      if(savedAttach){
+        await this.submissionsEditorRepository.delete(savedAttach.id);
+      
+        let data = {
+            success: 'success',
+        };
+        return data;
+      }
+
+    } catch (err) {
+        let data = {
+            error: err.message,
+        };
+        return data;
+    }
+  };
 
   async update(id: number, updateSubmissionDto: UpdateSubmissionDto) {
     try{
@@ -341,4 +510,95 @@ export class SubmissionsService {
             );
     }
   }
+
+  async updateSubmissionSection(id: number, updateSubmissionDto: any) {
+    try{
+
+      const submission = await this.submissionsRepository.findOne({where:{ id }});
+      if (!submission) {
+        throw new NotFoundException('Submission not found');
+      }
+
+      const section = await this.sectionsRepository.findOne({where:{ id: updateSubmissionDto.sectionId }});
+      if (!section) {
+        throw new NotFoundException('Section not found');
+      }
+
+      const updatedFields = {
+        section: section,
+        pages: updateSubmissionDto.pages,
+        url_path: updateSubmissionDto.urlPath,
+        datePublished: new Date(updateSubmissionDto.datePublished)
+      }
+
+      // console.log(updatedFields, 'upda')
+      // return;
+      const update = await this.submissionsRepository.update({ id }, updatedFields);
+
+      console.log(update)
+      if(update.affected < 1){
+        return {
+            error:'error',
+            message: 'An error has occurred'
+        }
+      }
+      
+      let data = {
+          success: 'success',
+          message: 'Updated Successfully!',
+      };
+      return data;
+
+    } catch (err) {
+        let data = {
+            error: err.message,
+        };
+        return data;
+    }
+  }
+
+  async updateSubmissionTitle(id: number, updateSubmissionDto: any) {
+    try{
+
+      const submission = await this.submissionsRepository.findOne({where:{ id }});
+      if (!submission) {
+        throw new NotFoundException('Submission not found');
+      }
+
+      const sanitizedAbstract = this.sanitizerService.sanitizeInput(updateSubmissionDto.abstract);
+
+      const updatedFields = {
+        prefix: updateSubmissionDto.prefix,
+        title: updateSubmissionDto.title,
+        subTitle: updateSubmissionDto.subTitle ,
+        abstract: updateSubmissionDto.abstract,
+        abstractPlain: sanitizedAbstract,
+      }
+
+      // console.log(updatedFields, 'upda')
+      // return;
+      const update = await this.submissionsRepository.update({ id }, updatedFields);
+
+      console.log(update)
+      if(update.affected < 1){
+        return {
+            error:'error',
+            message: 'An error has occurred'
+        }
+      }
+      
+      let data = {
+          success: 'success',
+          message: 'Updated Successfully!',
+      };
+      return data;
+
+    } catch (err) {
+        let data = {
+            error: err.message,
+        };
+        return data;
+    }
+  }
+
 }
