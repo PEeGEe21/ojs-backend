@@ -14,8 +14,8 @@ export class CreateSubmissionDto {
     @IsNotEmpty()
     title: string;  
 
-    @IsNotEmpty()
-    subTitle: string;  
+    // @IsNotEmpty()
+    subTitle?: string;  
 
     @IsNotEmpty()
     abstract: string; 

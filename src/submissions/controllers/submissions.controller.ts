@@ -60,6 +60,11 @@ export class SubmissionsController {
     return this.submissionsService.findAll();
   }
 
+  @Get('admin/all')
+  findAllAdmin() { 
+    return this.submissionsService.findAllAdmin();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.submissionsService.findOne(+id);
@@ -80,11 +85,18 @@ export class SubmissionsController {
     return this.submissionsService.remove(+id);
   }
 
-  @Delete(':id/delete/:fileId')
+  @Delete(':id/delete/:fileId/file')
   removeSubmissionFile(
     @Param('id') id: number,
     @Param('fileId') fileId: number
   ) {
     return this.submissionsService.removeSubmissionFile(+id, fileId);
+  }
+
+  @Post(':id/save-upload')
+  saveSubmissionUpload(
+    @Param('id') id: number,
+    @Body() createSubmissionFilesDto: any) {
+    return this.submissionsService.saveSubmissionUpload(id, createSubmissionFilesDto);
   }
 }

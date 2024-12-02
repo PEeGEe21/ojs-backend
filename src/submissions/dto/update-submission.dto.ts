@@ -17,7 +17,7 @@ export class UpdateSubmissionDto extends PartialType(CreateSubmissionDto) {
     title: string;  
 
     @IsNotEmpty()
-    subTitle: string;  
+    subTitle?: string;  
 
     @IsNotEmpty()
     abstract: string; 

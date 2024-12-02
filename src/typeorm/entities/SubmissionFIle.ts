@@ -23,9 +23,41 @@ export class SubmissionFile {
     @Column({ type: 'int'})
     userId: number;
   
-    @Column({ type: 'longtext', nullable: true })
+    @Column({ type: 'varchar' })
+    title: string;
+
+    @Column({ type: 'longtext' })
     file_url: string;
-  
+
+    @Column({ type: 'longtext', nullable: true })
+    description: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    creator: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    source: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    language: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    publisher: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    subject: string;
+
+    @Column({ type: 'date', nullable: true })
+    date: Date;
+
+    @Column({ type: 'int'})
+    upload_type: number;
+
+    @Column({ type: 'varchar'})
+    file_type: string;
+
+    @Column({ type: 'int'})
+    file_size: number;
   
     @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
     createdAt: Date;

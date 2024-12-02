@@ -119,7 +119,7 @@ export class SubmissionsService {
       const updatedFields = {
         prefix: submissionData.prefix,
         title: submissionData.title,
-        subTitle: submissionData.subTitle ,
+        subTitle: submissionData.subTitle??'' ,
         abstract: submissionData.abstract,
         abstractPlain: sanitizedAbstract,
         keywords: submissionData.keywords,
@@ -216,6 +216,23 @@ export class SubmissionsService {
       return res;
   }
 
+  async findAllAdmin() {
+      const submissions = await this.submissionsRepository.find({ 
+          order: {
+              createdAt: 'DESC', // Sort by creation date in descending order
+          },
+        relations:['user', 'files']
+      });
+  
+      const res = {
+          success: 'success',
+          message: 'successful',
+          data: submissions,
+      };
+
+      return res;
+  }
+
   async findOne(id: number) {
     try {
       const submission = await this.submissionsRepository.findOne({
@@ -265,6 +282,7 @@ export class SubmissionsService {
         where: { submission: submission },
       });
 
+      console.log(submissionFiles)
       let data = {
           submissionFiles,
           success: 'success',
@@ -489,6 +507,8 @@ export class SubmissionsService {
         const submission = await this.submissionsRepository.findOne({
             where: { id },
         });
+
+        console.log(submission)
     
         if (!submission) {
             return { error: 'error', message: 'Submission not found' };
@@ -601,4 +621,59 @@ export class SubmissionsService {
     }
   }
 
+  async saveSubmissionUpload(id: number, submissionFilesData: any): Promise<any> {
+    // console.log(questionData)
+    // return;
+    const user = await this.usersService.getUserAccountById(submissionFilesData.userId)
+    if (!user) {
+        throw new NotFoundException('User not found');
+    }
+
+
+    const submission = await this.submissionsRepository.findOne({
+        where: { id },
+    });
+    if (!submission)
+        throw new HttpException('Question not found', HttpStatus.BAD_REQUEST);
+
+
+    try{
+        const newsubmissionFile = this.submissionFilesRepository.create({
+            userId: user.id,
+            user: user,
+            submission: submission,
+            submissionId: submission.id,
+            title: submissionFilesData.title,
+            file_url: submissionFilesData.file_url,
+            file_type: submissionFilesData.file_type,
+            file_size: submissionFilesData.file_size,
+            creator: submissionFilesData.creator,
+            description: submissionFilesData.description,
+            source: submissionFilesData.source,
+            language: submissionFilesData.language,
+            publisher: submissionFilesData.publisher,
+            subject: submissionFilesData.subject,
+            date: submissionFilesData.date,
+            upload_type: submissionFilesData.upload_type,
+            
+        });
+
+        console.log(newsubmissionFile, 'newsubmissionFile')
+        const savedNewSubmissionFile = await this.submissionFilesRepository.save(newsubmissionFile);
+        
+        console.log(`submissionData has been created`);
+        let data = {
+            message: 'Created Successfully',
+            success: 'success',
+            submission: savedNewSubmissionFile,
+        };
+        return data;
+
+    } catch (err) {
+        let data = {
+            error: err.message,
+        };
+        return data;
+    }
+  };
 }
