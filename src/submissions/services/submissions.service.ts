@@ -257,6 +257,16 @@ export class SubmissionsService {
           where: { id: Not(In(attachedUserIds)) },
       });
 
+      // const unattachedUsers = await this.usersRepository.createQueryBuilder('user')
+      //   .innerJoin('user.userRoles', 'userRole')
+      //   .innerJoin('userRole.role', 'role')
+      //   .where('role.id = :editorRoleId', { editorRoleId: 4 }) // Editor role ID
+      //   .andWhere('user.id NOT IN (:...attachedUserIds)', { 
+      //     attachedUserIds: attachedUserIds.length > 0 ? attachedUserIds : [0] 
+      //   })
+      //   .getMany();
+
+
       // const sections
       let data = {
           submission,

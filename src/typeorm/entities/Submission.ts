@@ -62,6 +62,9 @@ export class Submission {
   @Column({ type: 'int', default: 0})
   status: number;
 
+  @Column({ type: 'int', default: 0})
+  publication_status: number;
+
   @Column({ type: 'int', nullable: true })
   pages: number;
 
