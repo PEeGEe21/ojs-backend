@@ -53,6 +53,12 @@ export class Issue {
   @Column({ type: 'int', default: true})
   status: boolean;
 
+  @Column({ type: 'int', default: false})
+  published_status: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  published_at: Date;
+
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
   createdAt: Date;
 

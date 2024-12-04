@@ -8,6 +8,7 @@ import { UpdateIssueDto } from '../dto/update-issue.dto';
 import { UsersService } from 'src/users/services/users.service';
 import { SanitizerService } from 'src/core/utils/SanitizerService';
 import { Journal } from 'src/typeorm/entities/Journal';
+import { Submission } from 'src/typeorm/entities/Submission';
 
 @Injectable()
 export class IssuesService {
@@ -19,6 +20,7 @@ export class IssuesService {
         @InjectRepository(User) private userRepository: Repository<User>,        
         @InjectRepository(Issue) private issueRepository: Repository<Issue>,        
         @InjectRepository(Journal) private journalsRepository: Repository<Journal>,        
+        @InjectRepository(Submission) private submissionsRepository: Repository<Submission>,        
     ) {}
 
     async findAllIssues() {
@@ -186,6 +188,93 @@ export class IssuesService {
                     'Error deleting Issue',
                     HttpStatus.INTERNAL_SERVER_ERROR,
                 );
+        }
+    }
+
+    async publishIssue(id: number) {
+        try{
+    
+            const issue = await this.issueRepository.findOne({where:{ id }});
+            if (!issue) {
+                throw new NotFoundException('Submission not found');
+            }
+        
+            const updatedFields = {
+                published_status: true,
+                published_at: new Date(),
+            }
+        
+            const issueUpdateResult = await this.issueRepository.update({ id }, updatedFields);
+        
+            if(issueUpdateResult.affected < 1){
+                return {
+                    error:'error',
+                    message: 'An error has occurred'
+                }
+            }
+                      
+            // Perform a bulk update of submissions related to the issue
+            const submissionsUpdateResult = await this.submissionsRepository.update(
+                { issue: issue },
+                {
+                    datePublished: new Date(),
+                }
+            );
+
+            if (submissionsUpdateResult.affected < 1) {
+                return {
+                    success: 'success',
+                    message: 'Issue published successfully, but no submissions were updated.',
+                };
+            }
+
+
+            let data = {
+                success: 'success',
+                message: 'Published Successfully!',
+            };
+            return data;
+    
+        } catch (err) {
+            let data = {
+                error: err.message,
+            };
+            return data;
+        }
+    }
+
+    async unPublishIssue(id: number) {
+        try{
+    
+            const issue = await this.issueRepository.findOne({where:{ id }});
+            if (!issue) {
+                throw new NotFoundException('Submission not found');
+            }
+        
+            const updatedFields = {
+                published_status: false,
+            }
+        
+            const issueUpdateResult = await this.issueRepository.update({ id }, updatedFields);
+        
+            if(issueUpdateResult.affected < 1){
+                return {
+                    error:'error',
+                    message: 'An error has occurred'
+                }
+            }
+
+            let data = {
+                success: 'success',
+                message: 'Unpublished Successfully!',
+            };
+            return data;
+    
+        } catch (err) {
+            let data = {
+                error: err.message,
+            };
+            return data;
         }
     }
 }

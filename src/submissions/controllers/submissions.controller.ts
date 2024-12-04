@@ -99,4 +99,28 @@ export class SubmissionsController {
     @Body() createSubmissionFilesDto: any) {
     return this.submissionsService.saveSubmissionUpload(id, createSubmissionFilesDto);
   }
+
+  @Post(':id/accept')
+  acceptSubmission(
+    @Param('id') id: number){
+    return this.submissionsService.acceptSubmission(id);
+  }
+
+  @Post(':id/reject')
+  rejectSubmission(
+    @Param('id') id: number){
+    return this.submissionsService.rejectSubmission(id);
+  }
+
+  @Post(':id/publish')
+  publishSubmission(
+    @Param('id') id: number){
+    return this.submissionsService.publishSubmission(id);
+  }
+  @Post(':id/unpublish')
+  unPublishSubmission(
+    @Param('id') id: number){
+    return this.submissionsService.unPublishSubmission(id);
+  }
+  
 }

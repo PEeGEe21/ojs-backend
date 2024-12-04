@@ -686,4 +686,149 @@ export class SubmissionsService {
         return data;
     }
   };
+
+  async acceptSubmission(id: number) {
+    try{
+
+      const submission = await this.submissionsRepository.findOne({where:{ id }});
+      if (!submission) {
+        throw new NotFoundException('Submission not found');
+      }
+
+      const updatedFields = {
+        status: 1,
+      }
+
+      const update = await this.submissionsRepository.update({ id }, updatedFields);
+
+      console.log(update)
+      if(update.affected < 1){
+        return {
+            error:'error',
+            message: 'An error has occurred'
+        }
+      }
+      
+      let data = {
+          success: 'success',
+          message: 'Accepted Successfully!',
+      };
+      return data;
+
+    } catch (err) {
+        let data = {
+            error: err.message,
+        };
+        return data;
+    }
+  }
+
+  async rejectSubmission(id: number) {
+    try{
+
+      const submission = await this.submissionsRepository.findOne({where:{ id }});
+      if (!submission) {
+        throw new NotFoundException('Submission not found');
+      }
+
+      const updatedFields = {
+        status: 2,
+      }
+
+      const update = await this.submissionsRepository.update({ id }, updatedFields);
+
+      console.log(update)
+      if(update.affected < 1){
+        return {
+            error:'error',
+            message: 'An error has occurred'
+        }
+      }
+      
+      let data = {
+          success: 'success',
+          message: 'Rejected Successfully!',
+      };
+      return data;
+
+    } catch (err) {
+        let data = {
+            error: err.message,
+        };
+        return data;
+    }
+  }
+
+  async publishSubmission(id: number) {
+    try{
+
+      const submission = await this.submissionsRepository.findOne({where:{ id }});
+      if (!submission) {
+        throw new NotFoundException('Submission not found');
+      }
+
+      const updatedFields = {
+        publication_status: 1,
+      }
+
+      const update = await this.submissionsRepository.update({ id }, updatedFields);
+
+      console.log(update)
+      if(update.affected < 1){
+        return {
+            error:'error',
+            message: 'An error has occurred'
+        }
+      }
+      
+      let data = {
+          success: 'success',
+          message: 'Published Successfully!',
+      };
+      return data;
+
+    } catch (err) {
+        let data = {
+            error: err.message,
+        };
+        return data;
+    }
+  }
+
+  async unPublishSubmission(id: number) {
+    try{
+
+      const submission = await this.submissionsRepository.findOne({where:{ id }});
+      if (!submission) {
+        throw new NotFoundException('Submission not found');
+      }
+
+      const updatedFields = {
+        publication_status: 0,
+      }
+
+      const update = await this.submissionsRepository.update({ id }, updatedFields);
+
+      console.log(update)
+      if(update.affected < 1){
+        return {
+            error:'error',
+            message: 'An error has occurred'
+        }
+      }
+      
+      let data = {
+          success: 'success',
+          message: 'Rejected Successfully!',
+      };
+      return data;
+
+    } catch (err) {
+        let data = {
+            error: err.message,
+        };
+        return data;
+    }
+  }
+
 }

@@ -37,4 +37,18 @@ export class IssuesController {
     ): Promise<any> {
         return this.issuesService.updateIssue(issue_id, issueUpdateDto);
     }
+
+    @Post(':id/publish')
+    async publishIssue(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<any> {
+        return this.issuesService.publishIssue(id);
+    }
+
+    @Post(':id/unpublish')
+    async unPublishSubmission(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<any> {
+        return this.issuesService.unPublishIssue(id);
+    }
 }
