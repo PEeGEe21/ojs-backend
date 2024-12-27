@@ -53,11 +53,25 @@ export class JournalsController {
         return this.journalsService.findActiveJournalIssues(journal_id);
     }
 
+    @Get('/issues/published/:journal_id')
+    async findActivePublishedJournalIssues(
+        @Param('journal_id', ParseIntPipe) journal_id: number,
+    ): Promise<any> {
+        return this.journalsService.findActivePublishedJournalIssues(journal_id);
+    }
+
     @Get('/all-issues/:journal_id')
     async findJournalIssues(
         @Param('journal_id', ParseIntPipe) journal_id: number,
     ): Promise<any> {
         return this.journalsService.findJournalIssues(journal_id);
+    }
+
+    @Get('/:journal_id/latest-issue')
+    async findLatestJournalIssue(
+        @Param('journal_id', ParseIntPipe) journal_id: number,
+    ): Promise<any> {
+        return this.journalsService.findLatestJournalIssue(journal_id);
     }
 
 

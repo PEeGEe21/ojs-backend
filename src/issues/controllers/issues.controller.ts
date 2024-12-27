@@ -11,6 +11,16 @@ export class IssuesController {
         return this.issuesService.findAllIssues();
     }
 
+    @Get('/published')
+    findAllPublishedIssues() {
+        return this.issuesService.findAllPublishedIssues();
+    }
+
+    @Get(':id')
+    findOne(@Param('id') id: number) {
+        return this.issuesService.findOne(+id);
+    }
+
     @Delete('delete/:id')
     removeIssue(@Param('id') id: number) {
         return this.issuesService.deleteIssue(+id);
@@ -50,5 +60,12 @@ export class IssuesController {
         @Param('id', ParseIntPipe) id: number,
     ): Promise<any> {
         return this.issuesService.unPublishIssue(id);
+    }
+
+    @Get(':id/submissions')
+    async findIssueSubmissions(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<any> {
+        return this.issuesService.findIssueSubmissions(id);
     }
 }

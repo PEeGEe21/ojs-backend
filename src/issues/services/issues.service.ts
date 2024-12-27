@@ -9,6 +9,7 @@ import { UsersService } from 'src/users/services/users.service';
 import { SanitizerService } from 'src/core/utils/SanitizerService';
 import { Journal } from 'src/typeorm/entities/Journal';
 import { Submission } from 'src/typeorm/entities/Submission';
+import { SubmissionFile } from 'src/typeorm/entities/SubmissionFIle';
 
 @Injectable()
 export class IssuesService {
@@ -21,7 +22,26 @@ export class IssuesService {
         @InjectRepository(Issue) private issueRepository: Repository<Issue>,        
         @InjectRepository(Journal) private journalsRepository: Repository<Journal>,        
         @InjectRepository(Submission) private submissionsRepository: Repository<Submission>,        
+        @InjectRepository(SubmissionFile) private submissionFilesRepository: Repository<SubmissionFile>,        
     ) {}
+
+    async findAllPublishedIssues() {
+        const issues = await this.issueRepository.find({
+            where:{ 
+                status: true, 
+                published_status: true
+            }, 
+            relations:['journal', 'user']
+        });
+
+        const res = {
+            success: 'success',
+            message: 'successfull',
+            issues
+        };
+  
+        return res;
+    }
 
     async findAllIssues() {
         const issues = await this.issueRepository.find({});
@@ -30,6 +50,30 @@ export class IssuesService {
             success: 'success',
             message: 'successfull',
             issues
+        };
+  
+        return res;
+    }
+
+    async findOne(id: number): Promise<any>{
+        const issue = await this.issueRepository.findOne({ 
+            where:{ 
+                id, 
+                status: true, 
+                // published_status: true
+            }, 
+            relations:['journal', 'user']
+
+        });
+
+        if (!issue) {
+            return { error: 'error', message: 'Issue not found' };
+        }
+
+        const res = {
+            success: 'success',
+            message: 'successfull',
+            issue
         };
   
         return res;
@@ -196,7 +240,7 @@ export class IssuesService {
     
             const issue = await this.issueRepository.findOne({where:{ id }});
             if (!issue) {
-                throw new NotFoundException('Submission not found');
+                return { error: 'error', message: 'Issue not found' };
             }
         
             const updatedFields = {
@@ -270,6 +314,52 @@ export class IssuesService {
             };
             return data;
     
+        } catch (err) {
+            let data = {
+                error: err.message,
+            };
+            return data;
+        }
+    }
+
+    async findIssueSubmissions(issue_id: any) {
+        try{
+            const issue = await this.issueRepository.findOne({where:{ id: issue_id }});
+            if (!issue) {
+                return { error: 'error', message: 'Issue not found' };
+            }
+
+            // console.log(issue)
+
+            const submissions = await this.submissionsRepository.find({ 
+                where: { issueId: issue.id, completed: 1, status: 1},
+                order: {
+                    createdAt: 'DESC', // Sort by creation date in descending order
+                },
+                relations:['user', 'files', 'issue']
+            });
+
+            const updatedSubmissions = await Promise.all(submissions.map(async (submission) => {
+                const submissionFile = await this.submissionFilesRepository.findOne({
+                    where: { submissionId: submission.id, is_main: true },
+                });
+                console.log(submissionFile, 'sdsd');
+            
+                return {
+                    ...submission,
+                    file: submissionFile
+                };
+            }));
+
+            // console.log(submissions)
+        
+            const res = {
+                success: 'success',
+                message: 'successful',
+                submissions: updatedSubmissions,
+            };
+    
+            return res;
         } catch (err) {
             let data = {
                 error: err.message,

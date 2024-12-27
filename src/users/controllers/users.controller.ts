@@ -35,6 +35,14 @@ export class UsersController {
         return this.usersService.getUserJournalSubmissions(user_id, journal_id);
     }
 
+    @Get('/role/:role_id')
+    findUsersWithRole(
+        @Param('role_id', ParseIntPipe) role_id: number,
+    ) {
+        console.log('in here')
+        return this.usersService.findUsersWithRole(role_id);
+    }
+
     @Post('/add-user')
     async createUser(
         @Body() userSignupDto: any,

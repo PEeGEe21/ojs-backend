@@ -50,6 +50,9 @@ export class SubmissionFile {
     @Column({ type: 'date', nullable: true })
     date: Date;
 
+    @Column({ default: false })
+    is_main: boolean;
+
     @Column({ type: 'int'})
     upload_type: number;
 

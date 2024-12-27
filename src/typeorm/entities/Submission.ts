@@ -17,6 +17,9 @@ export class Submission {
   @Column({ type: 'int', name: 'journal_id', nullable: true })
   journalId: number;
 
+  @Column({ type: 'int', name: 'issue_id', nullable: true })
+  issueId: number;
+
   @Column({ type: 'varchar', length: 255, nullable: true })
   prefix: string;
 

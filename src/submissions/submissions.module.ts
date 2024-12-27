@@ -16,6 +16,7 @@ import { UsersModule } from 'src/users/users.module';
 import { SubmissionEditor } from 'src/typeorm/entities/SubmissionEditor';
 import { Issue } from 'src/typeorm/entities/Issue';
 import { Section } from 'src/typeorm/entities/Section';
+import { PdfProcessorService } from 'src/core/utils/PdfProcessorService';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { Section } from 'src/typeorm/entities/Section';
     forwardRef(() => UsersModule), // Import UsersModule if needed
     TypeOrmModule.forFeature([User, Profile, Role, UserRole, Submission, SubmissionFile, Journal, SubmissionEditor, Issue, Section])],
   controllers: [SubmissionsController],
-  providers: [SubmissionsService, UsersService, SanitizerService],
+  providers: [SubmissionsService, UsersService, SanitizerService, PdfProcessorService],
   exports: [SubmissionsService]
 })
 export class SubmissionsModule {}

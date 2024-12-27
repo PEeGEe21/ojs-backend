@@ -48,6 +48,81 @@ export class UsersService {
     //     return this.users.find(user => user.username === username);
     // }
 
+    async findUsersWithRole2(role_id: any) {
+
+        const users = await this.userRepository.find({relations: ['userRoles.role']});
+        const role = await this.roleRepository.findOne({where: {id: role_id}});
+    
+
+        const updatedUsers = users.map((user) => {
+            const roles = user.userRoles;
+            const rolesIds = roles.map((role) => role.roleId); // Pluck role IDs
+            const defaultUserRole = roles.find((role) => role.is_default); 
+            const defaultRole = defaultUserRole ? defaultUserRole.role : null;
+            const user_default_role = defaultRole ? defaultRole.name : null;
+            const user_default_role_id = defaultRole ? Number(defaultRole.id) : null;
+          
+            return {     
+                ...user,
+                roles: roles,
+                default_role: defaultRole,
+                user_default_role,
+                user_default_role_id,
+                rolesIds
+            };
+        });
+
+        const res = {
+            success: 'success',
+            message: 'successfull',
+            users: updatedUsers,
+            roles
+        };
+  
+        return res;
+    }
+
+    async findUsersWithRole(role_id: number) {
+        // Fetch all users with their roles
+      
+        // Filter users whose roles include the given role_id and are not default
+        const updatedUsers = await this.getUsersWithRole(role_id);
+        const res = {
+          success: 'success',
+          message: 'successful',
+          users: updatedUsers,
+        };
+      
+        return res;
+    }
+
+    async getUsersWithRole(role_id: number): Promise<any>{
+        const users = await this.userRepository.find({ relations: ['userRoles.role'] });
+
+        const updatedUsers = users
+          .map((user) => {
+            const roles = user.userRoles.map((userRole) => userRole.role);
+            console.log(roles, 'roles')
+            const roleIds = roles.map((role) => role.id);
+            
+            // Check if the role exists and is NOT default
+            const matchingRole = roles.find((role) => role.id == role_id && role.is_active);
+
+            console.log(matchingRole, 'matchingRole')
+      
+            return matchingRole
+              ? {
+                  ...user,
+                  roles,
+                  roleIds,
+                }
+              : null;
+          })
+          .filter((user) => user !== null); // Filter out users who don't match the criteria
+      
+          return updatedUsers
+    }
+
     async findAll() {
         const users = await this.userRepository.find({relations: ['userRoles.role']});
         const roles = await this.roleRepository.find({});

@@ -14,6 +14,7 @@ import { Journal } from 'src/typeorm/entities/Journal';
 import { SubmissionEditor } from 'src/typeorm/entities/SubmissionEditor';
 import { Issue } from 'src/typeorm/entities/Issue';
 import { Section } from 'src/typeorm/entities/Section';
+import { PdfProcessorService } from 'src/core/utils/PdfProcessorService';
 
 @Injectable()
 export class SubmissionsService {
@@ -21,6 +22,7 @@ export class SubmissionsService {
 
     private usersService: UsersService ,
     private readonly sanitizerService: SanitizerService,
+    private readonly pdfProcessorService: PdfProcessorService,
 
 
     @InjectRepository(User) private usersRepository: Repository<User>,
@@ -235,7 +237,7 @@ export class SubmissionsService {
 
   async findOne(id: number) {
     try {
-      const submission = await this.submissionsRepository.findOne({
+      let submission = await this.submissionsRepository.findOne({
           where: { id },
           relations: ['user', 'files', 'editors', 'editors.editor', 'issue', 'section'],
       });
@@ -257,6 +259,14 @@ export class SubmissionsService {
           where: { id: Not(In(attachedUserIds)) },
       });
 
+      const submissionFile = await this.submissionFilesRepository.findOne({
+        where: { submissionId: submission.id, is_main: true  },
+      });
+
+      // console.log(submissionFile,'ifen')
+
+      const newSubmission = {...submission, file: submissionFile};
+      
       // const unattachedUsers = await this.usersRepository.createQueryBuilder('user')
       //   .innerJoin('user.userRoles', 'userRole')
       //   .innerJoin('userRole.role', 'role')
@@ -269,7 +279,7 @@ export class SubmissionsService {
 
       // const sections
       let data = {
-          submission,
+          submission: newSubmission,
           users:unattachedUsers,
           success: 'success',
       };
@@ -317,6 +327,7 @@ export class SubmissionsService {
       
       const updatedFields = {
         issue: issue,
+        issueId: issue.id,
       }
 
       const update = await this.submissionsRepository.update({ id: attachData.submissionId }, updatedFields);
@@ -829,6 +840,84 @@ export class SubmissionsService {
         };
         return data;
     }
+  }
+
+  async summarizeFile(fileId: number): Promise<any> {
+    try {
+      const file = await this.submissionFilesRepository.findOne({ where:{ id: fileId } });
+      if (!file) {
+        return {
+          error:'error',
+          message: 'An error has occurred'
+        }
+      }
+
+      
+      const fileBuffer = await this.pdfProcessorService.fetchFile(file.file_url);
+      
+      const pdfText = await this.pdfProcessorService.parsePdfContent(fileBuffer);
+      
+      const summary = await this.pdfProcessorService.summarizeText(pdfText);
+      // console.log(pdfText, file, fileBuffer, 'filee')
+      // return;
+      let data = {
+          success: 'success',
+          message: 'Success',
+          summary: summary,
+      };
+      return data;
+    } catch (err) {
+      let data = {
+          error: err.message,
+      };
+      return data;
+    }
+  }
+
+  async toggleSubmissionFilesMain(submissionId: number, fileId: number): Promise<any>{
+    try {
+      const submission = await this.submissionsRepository.findOne({
+          where: { id: submissionId },
+      });
+      if (!submission)
+          throw new HttpException('Submission not found', HttpStatus.BAD_REQUEST);
+  
+      const submissionFile = await this.submissionFilesRepository.findOne({
+        where: { id: fileId },
+      });
+
+      const newIsMain = !submissionFile.is_main;
+    
+      // Update all files in this submission
+      await this.submissionFilesRepository.update(
+        { 
+          submission: { id: submissionId },
+          id: Not(fileId) // Update all files except the selected one
+        },
+        { is_main: !newIsMain } // Set opposite value for other files
+      );
+
+      // Update the selected file
+      await this.submissionFilesRepository.update(
+        { id: fileId },
+        { is_main: newIsMain }
+      );
+
+
+      // let is_main = !submissionFile.is_main;
+      // await this.submissionFilesRepository.update({ id: submissionFile.id }, {is_main: is_main});
+
+
+      // const submissionFiles = await this.submissionFilesRepository.find({
+      //   where: { submission: submission },
+      // });
+
+      let data = {
+          success: 'success',
+      };
+      return data;
+
+    } catch (err) {}
   }
 
 }

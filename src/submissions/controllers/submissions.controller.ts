@@ -66,7 +66,7 @@ export class SubmissionsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.submissionsService.findOne(+id);
   }
 
@@ -121,6 +121,20 @@ export class SubmissionsController {
   unPublishSubmission(
     @Param('id') id: number){
     return this.submissionsService.unPublishSubmission(id);
+  }
+
+  @Post(':id/summarize')
+  summarizeFile(
+    @Param('id') id: number){
+    return this.submissionsService.summarizeFile(id);
+  }
+
+  @Post(':id/submission-files/toggle-main/:fileId')
+  toggleSubmissionFilesMain(
+    @Param('id') id: number,
+    @Param('fileId') fileId: number,
+  ){
+    return this.submissionsService.toggleSubmissionFilesMain(id, fileId);
   }
   
 }

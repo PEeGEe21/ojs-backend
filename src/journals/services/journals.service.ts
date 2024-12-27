@@ -290,6 +290,33 @@ export class JournalsService {
   
         return res;
     }
+
+    async findActivePublishedJournalIssues(journal_id: number): Promise<any> {
+        try{
+            const issues = await this.issuesRepository.find({
+                where: { 
+                    journalId: journal_id, 
+                    status: true, 
+                    published_status: true
+                },
+
+                order: {
+                    published_at: 'DESC'
+                },
+            });
+
+            // const newIssues = issues.splice(1);
+            const res = {
+                success: 'success',
+                message: 'success',
+                issues: issues
+            };
+            return res;
+        } catch(err){
+
+        }
+
+    }
     
 
     async findJournalIssues(journal_id: number): Promise<any> {
@@ -298,6 +325,30 @@ export class JournalsService {
             success: 'success',
             message: 'successfull',
             issues
+        };
+  
+        return res;
+    }
+
+    async findLatestJournalIssue(journal_id: number): Promise<any> {
+        const issues = await this.issuesRepository.find({
+            where: { 
+                journalId: journal_id, 
+                status: true, 
+                published_status: true
+            }, 
+            order: {
+                published_at: 'DESC'
+            },
+            take: 1
+        });
+
+        console.log(issues);
+
+        const res = {
+            success: 'success',
+            message: 'success',
+            latest_issue: issues[0]
         };
   
         return res;
