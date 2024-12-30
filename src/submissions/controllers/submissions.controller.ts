@@ -4,6 +4,7 @@ import { CreateSubmissionDto } from '../dto/create-submission.dto';
 import { UpdateSubmissionDto } from '../dto/update-submission.dto';
 import { CreateSubmissionFirstStepDto } from '../dto/create-submission-first-step.dto';
 import { CreateSubmissionFinalSaveDto } from '../dto/create-submission-final-save.dto';
+import { CreateSubmissionContributorDto } from '../dto/create-submission-contributor.dto';
 
 @Controller('submissions')
 export class SubmissionsController {
@@ -80,6 +81,13 @@ export class SubmissionsController {
     return this.submissionsService.update(+id, updateSubmissionDto);
   }
 
+  @Patch(':id/update-keywords')
+  updateKeywords(
+    @Param('id') id: number|string, 
+    @Body() updateSubmissionKeywords: any) {
+    return this.submissionsService.updateKeywords(+id, updateSubmissionKeywords);
+  }
+
   @Delete('delete/:id')
   remove(@Param('id') id: number) {
     return this.submissionsService.remove(+id);
@@ -136,5 +144,27 @@ export class SubmissionsController {
   ){
     return this.submissionsService.toggleSubmissionFilesMain(id, fileId);
   }
-  
+ 
+  @Post(':id/add-contributor')
+  addSubmissionContributor(
+    @Param('id') id: number,
+    @Body() addSubmissionContributor: CreateSubmissionContributorDto,
+  ){
+    return this.submissionsService.addSubmissionContributor(id, addSubmissionContributor);
+  }
+
+  @Patch('update-contributor/:id')
+  updateSubmissionContributor(
+    @Param('id') id: number,
+    @Body() updateSubmissionContributor: CreateSubmissionContributorDto,
+  ){
+    return this.submissionsService.updateSubmissionContributor(id, updateSubmissionContributor);
+  }
+
+  @Delete('contributor/delete/:id')
+  removeSubmissionContributor(
+    @Param('id') id: number,
+  ){
+    return this.submissionsService.removeSubmissionContributor(id);
+  }
 }

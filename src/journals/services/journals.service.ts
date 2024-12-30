@@ -200,6 +200,7 @@ export class JournalsService {
                 notePlain: sanitizedNote,
                 slug: updateJournalDto.slug,
                 file_name: updateJournalDto.file_name,
+                file_url: updateJournalDto.file_url,
                 accronym: updateJournalDto.accronym,
                 user:user,
                 editor:editor

@@ -20,6 +20,7 @@ import { RolesModule } from './roles/roles.module';
 import { IssuesModule } from './issues/issues.module';
 import { Issue } from './typeorm/entities/Issue';
 import { Section } from './typeorm/entities/Section';
+import { SubmissionContributor } from './typeorm/entities/SubmissionContributor';
 
 @Module({
   imports: [
@@ -32,11 +33,11 @@ import { Section } from './typeorm/entities/Section';
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
       ssl: { rejectUnauthorized: false },
-      entities: [User, Profile, Role, UserRole, Submission, SubmissionFile, Journal, Issue, Section],
+      entities: [User, Profile, Role, UserRole, Submission, SubmissionFile, Journal, Issue, Section, SubmissionContributor],
       synchronize: true,
       autoLoadEntities:true
     }),
-    TypeOrmModule.forFeature([User, UserRole, Profile, Role, Submission, SubmissionFile, Journal, Issue, Section]), // Ensure Role is added here
+    TypeOrmModule.forFeature([User, UserRole, Profile, Role, Submission, SubmissionFile, Journal, Issue, Section, SubmissionContributor]), // Ensure Role is added here
     AuthModule, 
     UsersModule, 
     SubmissionsModule, 

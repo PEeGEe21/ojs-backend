@@ -17,7 +17,7 @@ export class Journal {
   @Column({ type: 'varchar', length: 255, unique: true })
   name: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'longtext', nullable: true })
   file_url: string;
   
   @Column({ type: 'varchar', length: 255, nullable: true })

@@ -40,7 +40,7 @@ export class SubmissionEditor {
     @JoinColumn({ name: 'editor_id' })
     editor: User;
   
-    @ManyToOne(() => Submission, submission => submission.files)
+    @ManyToOne(() => Submission, submission => submission.editors)
     @JoinColumn({ name: 'submission_id' })
     submission: Submission;
 

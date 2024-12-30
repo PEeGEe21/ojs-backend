@@ -15,6 +15,8 @@ import { SubmissionEditor } from 'src/typeorm/entities/SubmissionEditor';
 import { Issue } from 'src/typeorm/entities/Issue';
 import { Section } from 'src/typeorm/entities/Section';
 import { PdfProcessorService } from 'src/core/utils/PdfProcessorService';
+import { CreateSubmissionContributorDto } from '../dto/create-submission-contributor.dto';
+import { SubmissionContributor } from 'src/typeorm/entities/SubmissionContributor';
 
 @Injectable()
 export class SubmissionsService {
@@ -30,6 +32,7 @@ export class SubmissionsService {
     @InjectRepository(SubmissionFile) private submissionFilesRepository: Repository<SubmissionFile>,
     @InjectRepository(Journal) private journalsRepository: Repository<Journal>,
     @InjectRepository(SubmissionEditor) private submissionsEditorRepository: Repository<SubmissionEditor>,
+    @InjectRepository(SubmissionContributor) private submissionContributorsRepository: Repository<SubmissionContributor>,
     @InjectRepository(Issue) private issuesRepository: Repository<Issue>,
     @InjectRepository(Section) private sectionsRepository: Repository<Section>,
 
@@ -76,13 +79,13 @@ export class SubmissionsService {
             updatedAt: new Date(),
         });
 
-        console.log(newSubmission, 'newQuestion')
+        // console.log(newSubmission, 'newQuestion')
         const savedNewSubmission = await this.submissionsRepository.save(newSubmission);
         // if (questionData.answers){
         //     await this.createAnswers(questionData, saveNewQuestion);
         // }
         
-        console.log(`submissionData has been created`);
+        // console.log(`submissionData has been created`);
         let data = {
             success: 'success',
             submission: savedNewSubmission,
@@ -137,7 +140,7 @@ export class SubmissionsService {
 
       const newQuestion = await this.submissionsRepository.findOne({where:{ id: submissionData.id }});
 
-      console.log(newQuestion, 'newQuestion')
+      // console.log(newQuestion, 'newQuestion')
       
       let data = {
           success: 'success',
@@ -183,7 +186,7 @@ export class SubmissionsService {
 
       const newSubmission = await this.submissionsRepository.findOne({where:{ id: submissionData.id }});
 
-      console.log(newSubmission, 'newSubmission')
+      // console.log(newSubmission, 'newSubmission')
       
       let data = {
           success: 'success',
@@ -202,7 +205,7 @@ export class SubmissionsService {
   async findAll() {
       const submissions = await this.submissionsRepository.find({ 
         where:
-          { completed: 1, status: 1},
+          { completed: 1, status: 1, publication_status: 1 },
           order: {
               createdAt: 'DESC', // Sort by creation date in descending order
           },
@@ -239,7 +242,7 @@ export class SubmissionsService {
     try {
       let submission = await this.submissionsRepository.findOne({
           where: { id },
-          relations: ['user', 'files', 'editors', 'editors.editor', 'issue', 'section'],
+          relations: ['user', 'files', 'editors', 'editors.editor', 'issue', 'section', 'contributors'],
       });
 
       if (!submission)
@@ -286,7 +289,7 @@ export class SubmissionsService {
       return data;
 
     } catch (err) {
-      console.log(err)
+      // console.log(err)
     }
   }
 
@@ -302,7 +305,7 @@ export class SubmissionsService {
         where: { submission: submission },
       });
 
-      console.log(submissionFiles)
+      // console.log(submissionFiles)
       let data = {
           submissionFiles,
           success: 'success',
@@ -410,7 +413,7 @@ export class SubmissionsService {
           throw new NotFoundException('User not found');
       }
 
-      console.log(editorId, user)
+      // console.log(editorId, user)
       const submission = await this.submissionsRepository.findOne({where:{ id: submissionId }});
       if (!submission) {
         throw new NotFoundException('Submission not found');
@@ -448,7 +451,7 @@ export class SubmissionsService {
 
       const submission = await this.submissionsRepository.findOne({where:{ id }});
       if (!submission) {
-        throw new NotFoundException('User not found');
+        throw new NotFoundException('Submission not found');
       }
 
       // console.log(optionType, difficultyType)
@@ -467,21 +470,57 @@ export class SubmissionsService {
 
       const update = await this.submissionsRepository.update({ id }, updatedFields);
 
-      console.log(update)
       if(update.affected < 1){
-        return {
-            error:'error',
-            message: 'An error has occurred'
-        }
-    }
+          return {
+              error:'error',
+              message: 'An error has occurred'
+          }
+      }
 
-      const newQuestion = await this.submissionsRepository.findOne({where:{ id }});
-
-      console.log(newQuestion, 'newQuestion')
+      const updatedSubmission = await this.submissionsRepository.findOne({where:{ id }});
       
       let data = {
           success: 'success',
-          submission: newQuestion,
+          message: 'success',
+          submission: updatedSubmission,
+      };
+      return data;
+
+    } catch (err) {
+        let data = {
+            error: err.message,
+        };
+        return data;
+    }
+  }
+
+  async updateKeywords(id: number, updateSubmissionKeywords: any) {
+    try{
+
+      const submission = await this.submissionsRepository.findOne({where:{ id }});
+      if (!submission) {
+        throw new NotFoundException('Submission not found');
+      }
+
+      const updatedFields = {
+        keywords: updateSubmissionKeywords.keywords,
+      }
+
+      const update = await this.submissionsRepository.update({ id }, updatedFields);
+
+        if(update.affected < 1){
+          return {
+              error:'error',
+              message: 'An error has occurred'
+          }
+      }
+
+      const updatedSubmission = await this.submissionsRepository.findOne({where:{ id }});
+      
+      let data = {
+          success: 'success',
+          message: 'Updated Keywords Successfully',
+          submission: updatedSubmission,
       };
       return data;
 
@@ -528,8 +567,6 @@ export class SubmissionsService {
         const submission = await this.submissionsRepository.findOne({
             where: { id },
         });
-
-        console.log(submission)
     
         if (!submission) {
             return { error: 'error', message: 'Submission not found' };
@@ -576,7 +613,7 @@ export class SubmissionsService {
       // return;
       const update = await this.submissionsRepository.update({ id }, updatedFields);
 
-      console.log(update)
+      // console.log(update)
       if(update.affected < 1){
         return {
             error:'error',
@@ -620,7 +657,7 @@ export class SubmissionsService {
       // return;
       const update = await this.submissionsRepository.update({ id }, updatedFields);
 
-      console.log(update)
+      // console.log(update)
       if(update.affected < 1){
         return {
             error:'error',
@@ -639,6 +676,124 @@ export class SubmissionsService {
             error: err.message,
         };
         return data;
+    }
+  }
+
+  async addSubmissionContributor(id: number, addSubmissionContributor: CreateSubmissionContributorDto) {
+    try{
+
+      const submission = await this.submissionsRepository.findOne({where:{ id }});
+      if (!submission) {
+        throw new NotFoundException('Submission not found');
+      }
+
+      const sanitizedBio = this.sanitizerService.sanitizeInput(addSubmissionContributor.bio);
+
+      const newSubmissionContributor = this.submissionContributorsRepository.create({
+        submissionId: submission.id,
+        submission: submission,
+        firstname: addSubmissionContributor.firstname,
+        lastname: addSubmissionContributor.lastname,
+        email: addSubmissionContributor.email,
+        role: addSubmissionContributor.role,
+        orcid: addSubmissionContributor.orcid,
+        homepage: addSubmissionContributor.homepage,
+        public_name: addSubmissionContributor.public_name,
+        affiliation: addSubmissionContributor.affiliation,
+        country: addSubmissionContributor?.country??'',
+        bio: addSubmissionContributor.bio,
+        bioPlain: sanitizedBio,
+        is_principal_contact: addSubmissionContributor.is_principal_contact,
+      });
+
+      const savedSubmissionContributor = await this.submissionContributorsRepository.save(newSubmissionContributor);
+      
+      let data = {
+          success: 'success',
+          message: 'Saved Successfully!',
+          contributor: savedSubmissionContributor,
+      };
+      return data;
+
+    } catch (err) {
+        let data = {
+            error: err.message,
+        };
+        return data;
+    }
+  }
+  
+  async updateSubmissionContributor(id: number, addSubmissionContributor: CreateSubmissionContributorDto) {
+    try{
+
+      const contributor = await this.submissionContributorsRepository.findOne({where:{ id }});
+      if (!contributor) {
+        throw new NotFoundException('Contributor not found');
+      }
+
+      const sanitizedBio = this.sanitizerService.sanitizeInput(addSubmissionContributor.bio);
+
+      const updatedFields = {
+        // submissionId: submission.id,
+        // submission: submission,
+        firstname: addSubmissionContributor.firstname,
+        lastname: addSubmissionContributor.lastname,
+        email: addSubmissionContributor.email,
+        role: addSubmissionContributor.role,
+        orcid: addSubmissionContributor.orcid,
+        homepage: addSubmissionContributor.homepage,
+        public_name: addSubmissionContributor.public_name,
+        affiliation: addSubmissionContributor.affiliation,
+        country: addSubmissionContributor.country,
+        bio: addSubmissionContributor.bio,
+        bioPlain: sanitizedBio,
+        is_principal_contact: addSubmissionContributor.is_principal_contact,
+      }
+
+      const update = await this.submissionContributorsRepository.update({ id }, updatedFields);
+
+      // console.log(update)
+      if(update.affected < 1){
+        return {
+            error:'error',
+            message: 'An error has occurred'
+        }
+      }
+      
+      let data = {
+          success: 'success',
+          message: 'Updated Successfully!',
+      };
+      return data;
+
+    } catch (err) {
+        let data = {
+            error: err.message,
+        };
+        return data;
+    }
+  }
+
+  async removeSubmissionContributor(id: number) {
+    try {
+        const contributor = await this.submissionContributorsRepository.findOne({
+            where: { id },
+        });
+    
+        if (!contributor) {
+            return { error: 'error', message: 'Contributor not found' };
+        }
+
+        await this.submissionContributorsRepository.delete(contributor.id);
+
+        return { success: 'success', message: 'Contributor deleted successfully' };
+
+    } catch (err) {
+        console.error('Error deleting Contributor:', err);
+        throw new HttpException(
+            'Error deleting Contributor',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+        );
     }
   }
 
@@ -679,10 +834,10 @@ export class SubmissionsService {
             
         });
 
-        console.log(newsubmissionFile, 'newsubmissionFile')
+        // console.log(newsubmissionFile, 'newsubmissionFile')
         const savedNewSubmissionFile = await this.submissionFilesRepository.save(newsubmissionFile);
         
-        console.log(`submissionData has been created`);
+        // console.log(`submissionData has been created`);
         let data = {
             message: 'Created Successfully',
             success: 'success',
@@ -712,7 +867,7 @@ export class SubmissionsService {
 
       const update = await this.submissionsRepository.update({ id }, updatedFields);
 
-      console.log(update)
+      // console.log(update)
       if(update.affected < 1){
         return {
             error:'error',
@@ -748,7 +903,7 @@ export class SubmissionsService {
 
       const update = await this.submissionsRepository.update({ id }, updatedFields);
 
-      console.log(update)
+      // console.log(update)
       if(update.affected < 1){
         return {
             error:'error',
@@ -784,7 +939,7 @@ export class SubmissionsService {
 
       const update = await this.submissionsRepository.update({ id }, updatedFields);
 
-      console.log(update)
+      // console.log(update)
       if(update.affected < 1){
         return {
             error:'error',
@@ -820,7 +975,7 @@ export class SubmissionsService {
 
       const update = await this.submissionsRepository.update({ id }, updatedFields);
 
-      console.log(update)
+      // console.log(update)
       if(update.affected < 1){
         return {
             error:'error',

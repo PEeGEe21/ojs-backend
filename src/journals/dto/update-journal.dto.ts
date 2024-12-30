@@ -23,4 +23,5 @@ export class UpdateJournalDto extends PartialType(CreateJournalDto) {
     
     accronym?: string;
     file_name?: string;
+    file_url?: string;
 }

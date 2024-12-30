@@ -17,12 +17,13 @@ import { SubmissionEditor } from 'src/typeorm/entities/SubmissionEditor';
 import { Issue } from 'src/typeorm/entities/Issue';
 import { Section } from 'src/typeorm/entities/Section';
 import { PdfProcessorService } from 'src/core/utils/PdfProcessorService';
+import { SubmissionContributor } from 'src/typeorm/entities/SubmissionContributor';
 
 @Module({
   imports: [
     forwardRef(() => AuthModule),  // Import AuthModule here
     forwardRef(() => UsersModule), // Import UsersModule if needed
-    TypeOrmModule.forFeature([User, Profile, Role, UserRole, Submission, SubmissionFile, Journal, SubmissionEditor, Issue, Section])],
+    TypeOrmModule.forFeature([User, Profile, Role, UserRole, Submission, SubmissionFile, Journal, SubmissionEditor, Issue, Section, SubmissionContributor])],
   controllers: [SubmissionsController],
   providers: [SubmissionsService, UsersService, SanitizerService, PdfProcessorService],
   exports: [SubmissionsService]

@@ -41,7 +41,7 @@ export class Issue {
   @Column({ type: 'longtext', nullable: true})
   descriptionPlain: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'longtext', nullable: true })
   cover_image_url: string;
   
   @Column({ type: 'varchar', length: 255, nullable: true })

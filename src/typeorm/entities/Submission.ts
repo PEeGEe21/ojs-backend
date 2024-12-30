@@ -5,6 +5,7 @@ import { Journal } from './Journal';
 import { Issue } from './Issue';
 import { SubmissionEditor } from './SubmissionEditor';
 import { Section } from './Section';
+import { SubmissionContributor } from './SubmissionContributor';
 
 @Entity('submissions')
 export class Submission {
@@ -93,6 +94,9 @@ export class Submission {
 
   @OneToMany(() => SubmissionEditor, (editor) => editor.submission)
   editors: SubmissionEditor[];
+
+  @OneToMany(() => SubmissionContributor, (contributor) => contributor.submission)
+  contributors: SubmissionContributor[];
 
   @ManyToOne(() => Journal, journal => journal.submissions)
   @JoinColumn({ name: 'journal_id' })

@@ -31,6 +31,9 @@ export class IssuesService {
                 status: true, 
                 published_status: true
             }, 
+            order: {
+                published_at: 'DESC'
+            },
             relations:['journal', 'user']
         });
 
