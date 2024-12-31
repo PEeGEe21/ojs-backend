@@ -31,7 +31,6 @@ export class UsersController {
         @Param('user_id', ParseIntPipe) user_id: number,
         @Param('journal_id', ParseIntPipe) journal_id: number,
     ) {
-        console.log('in here')
         return this.usersService.getUserJournalSubmissions(user_id, journal_id);
     }
 
@@ -39,8 +38,12 @@ export class UsersController {
     findUsersWithRole(
         @Param('role_id', ParseIntPipe) role_id: number,
     ) {
-        console.log('in here')
         return this.usersService.findUsersWithRole(role_id);
+    }
+
+    @Get('/reset-profiles')
+    resetUserProfiles() {
+        return this.usersService.resetUserProfiles();
     }
 
     @Post('/add-user')

@@ -35,4 +35,13 @@ export class Profile {
   })
   profile_created: number;
 
+  @Column({ type: 'varchar', nullable: true})
+  affiliation: string;
+
+  @Column({ type: 'longtext', nullable: true})
+  bio: string;
+
+  @Column({ type: 'longtext', nullable: true})
+  bioPlain: string;
+
 }

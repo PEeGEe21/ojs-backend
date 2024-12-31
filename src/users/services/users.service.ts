@@ -97,25 +97,25 @@ export class UsersService {
     }
 
     async getUsersWithRole(role_id: number): Promise<any>{
-        const users = await this.userRepository.find({ relations: ['userRoles.role'] });
+        const users = await this.userRepository.find({ relations: ['userRoles.role', 'profile'] });
 
-        const updatedUsers = users
-          .map((user) => {
+        // const updatedSubmissions = await Promise.all(submissions.map(async (submission) => {
+
+        const updatedUsers = users.map((user) => {
+            
             const roles = user.userRoles.map((userRole) => userRole.role);
-            console.log(roles, 'roles')
             const roleIds = roles.map((role) => role.id);
             
             // Check if the role exists and is NOT default
-            const matchingRole = roles.find((role) => role.id == role_id && role.is_active);
-
-            console.log(matchingRole, 'matchingRole')
-      
-            return matchingRole
-              ? {
+            const matchingRole = roles.find((role) => role.id == role_id && role.is_active);  
+            const updatedUser =   {
                   ...user,
                   roles,
                   roleIds,
-                }
+                };
+
+            return matchingRole
+              ? updatedUser
               : null;
           })
           .filter((user) => user !== null); // Filter out users who don't match the criteria
@@ -156,6 +156,36 @@ export class UsersService {
         return res;
     }
 
+
+    async resetUserProfiles() {
+        try{
+            const users = await this.userRepository.find({});
+            for (const user of users) {
+                const userProfile = await this.findUserProfile(user);
+
+                const updatedFields = {
+                    profile: userProfile,
+                }
+        
+                const update = await this.userRepository.update({ id: user.id }, updatedFields);
+            
+                if(update.affected < 1){
+                    return {
+                        error:'error',
+                        message: 'An error has occurred'
+                    }
+                }
+
+            }
+            return {
+                success: 'success',
+                message: 'success'
+            }
+        } catch(err){
+
+        }
+    }
+
     async delete(id: number) {
         try {
             const user = await this.userRepository.findOne({
@@ -184,12 +214,20 @@ export class UsersService {
     }
 
     async deleteUserProfile(user){
-        const user_profile = await this.profileRepository.findOne({
-            where: { user: user },
-        });
+        const user_profile = await this.findUserProfile(user);
 
         if(user_profile)
             await this.profileRepository.delete(user_profile.id);
+    }
+
+    async findUserProfile(user){
+        const user_profile = await this.profileRepository.findOne({
+            where: { user: user },
+        });
+        if(!user_profile)
+            return null;
+
+        return user_profile
     }
 
     async deleteUserRoles(user){

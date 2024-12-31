@@ -47,10 +47,9 @@ export class User {
   @Column({ default: true })
   is_active: boolean;
 
-  @OneToOne(() => Profile)
-  @JoinColumn()
+  @OneToOne(() => Profile, (profile)=>profile.user)
+  @JoinColumn({ name: 'profile_id'})
   profile: Profile;
-
 
   @OneToMany(() => UserRole, (userRole) => userRole.user)
   userRoles: UserRole[];
