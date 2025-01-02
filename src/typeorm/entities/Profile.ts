@@ -31,6 +31,11 @@ export class Profile {
   address?: string;
 
   @Column({
+    default: '',
+  })
+  mailing_address?: string;
+
+  @Column({
     default: 0,
   })
   profile_created: number;
@@ -44,4 +49,9 @@ export class Profile {
   @Column({ type: 'longtext', nullable: true})
   bioPlain: string;
 
+  @Column({ type: 'varchar', nullable: true})
+  homepage: string;
+
+  @Column({ type: 'varchar', nullable: true})
+  orcid: string;
 }

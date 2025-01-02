@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, forwardRef, HttpException, HttpStatus, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from 'src/users/services/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { EmailLoginDto } from '../dtos/email-login.dto';
@@ -17,6 +17,7 @@ import { Role } from 'src/typeorm/entities/Role';
 @Injectable()
 export class AuthService {
     constructor(
+        
         private usersService: UsersService,
         private jwtService: JwtService,
 
@@ -31,7 +32,7 @@ export class AuthService {
         const { email, password } = loginDto;
         const user = await this.usersService.getUserAccountByEmail(email);
         if (!user)
-            throw new HttpException('User not found.', HttpStatus.BAD_REQUEST);
+            throw new HttpException('Incorrrect Email or Password.', HttpStatus.BAD_REQUEST);
 
         await this.usersService.checkAccountActiveStatus(user.id);
 
@@ -216,6 +217,7 @@ export class AuthService {
           ...userDetails,
           firstname: userDetails.fname,
           lastname: userDetails.lname,
+          avatar: '/images/avatar-1.png',
           created_at: new Date(),
         });
 

@@ -37,6 +37,12 @@ export class User {
   // { select: false }
   password: string;
 
+  @Column({ type: 'longtext', nullable: true})
+  avatar: string;
+
+  @Column({ type: 'varchar', nullable: true})
+  public_name: string;
+
   @Exclude()
   @Column()
   created_at: Date;

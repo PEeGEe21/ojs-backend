@@ -14,6 +14,7 @@ import { Submission } from 'src/typeorm/entities/Submission';
 import { SubmissionFile } from 'src/typeorm/entities/SubmissionFIle';
 import { Journal } from 'src/typeorm/entities/Journal';
 import { UsersService } from 'src/users/services/users.service';
+import { SanitizerService } from 'src/core/utils/SanitizerService';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { UsersService } from 'src/users/services/users.service';
     TypeOrmModule.forFeature([User, Profile, Role, UserRole, Submission, SubmissionFile, Journal]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UsersService],
+  providers: [AuthService, UsersService, SanitizerService],
   exports: [AuthService]
 })
 export class AuthModule {}

@@ -10,6 +10,9 @@ import { Submission } from 'src/typeorm/entities/Submission';
 import { User } from 'src/typeorm/entities/User';
 import { UserRole } from 'src/typeorm/entities/UserRole';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcryptjs';
+import { SanitizerService } from 'src/core/utils/SanitizerService';
+
 // export type User = any;
 
 @Injectable()
@@ -18,6 +21,7 @@ export class UsersService {
 
         @Inject(forwardRef(() => AuthService))
         private authService: AuthService,
+        private readonly sanitizerService: SanitizerService,
 
         @InjectRepository(User) private userRepository: Repository<User>,
         @InjectRepository(Profile) private profileRepository: Repository<Profile>,        
@@ -47,6 +51,26 @@ export class UsersService {
     // async findOne(username: string): Promise<User | undefined> {
     //     return this.users.find(user => user.username === username);
     // }
+
+    async findOne(id: number): Promise<any | undefined> { 
+        try{
+            const user = await this.userRepository.findOne({ where: {id: id, is_active: true}, relations: ['profile'] });
+
+            if(!user)
+                return {
+                    error: 'User not found',
+                    message: 'User not found',
+                }
+
+            return {
+                success:'success',
+                message:'success',
+                user
+            };
+        } catch(err) {
+
+        }
+    }
 
     async findUsersWithRole2(role_id: any) {
 
@@ -395,6 +419,290 @@ export class UsersService {
         return data
     };
 
+    async updateUserPassword(user_id: number, userdetails: any){
+        try{
+            const user  = await this.getUserAccountById(user_id);
+            if(!user)
+                return{
+                    error: 'error',
+                    message: 'User not found'
+                }
+
+            const userPassword = await this.getUserAccountPassword(
+                user.email,
+            );
+            
+            const isCorrectPassword = await bcrypt.compare(userdetails.password, userPassword);
+            
+            if (!isCorrectPassword) {
+                return{
+                    error: 'error',
+                    message: 'Incorrect Password'
+                }
+
+            }
+
+            const matches = await this.checkPasswordMatchesIncoming(userdetails.apassword, userdetails.cpassword)
+            if(!matches)
+                return{
+                    error: 'error',
+                    message: 'New Passwords do not match'
+                }
+            
+            const updatedFields: {
+                password?: string; 
+            } = {};
+            
+            if(userdetails.apassword || userdetails.apassword !== '')
+                updatedFields.password = await this.authService.hashPassword(userdetails.apassword);
+
+
+            const update = await this.userRepository.update({ id: user.id }, updatedFields);
+        
+            if(update.affected < 1){
+                return {
+                    error:'error',
+                    message: 'An error has occurred'
+                }
+            }
+        
+            const data = {
+                success: 'success',
+                message: 'User updated successfully',
+            }
+            return data
+        } catch(err){
+
+        }
+    };
+
+    async updateUserProfile(user_id: number, userdetails: any){
+        try{
+            const user  = await this.getUserAccountById(user_id);
+            if(!user)
+                return{
+                    error: 'error',
+                    message: 'User not found'
+                }
+
+            const updateUserProfile = await this.updateProfile(user, userdetails);
+            console.log(updateUserProfile, 'sdsd')
+            if(!updateUserProfile){
+                return {
+                    error:'error',
+                    message: 'An error has occurred'
+                }
+            }
+
+            const updatedFields: {
+                avatar?: string; 
+            } = {
+                avatar: userdetails.avatar
+            };
+
+
+            const update = await this.userRepository.update({ id: user.id }, updatedFields);
+        
+            if(update.affected < 1){
+                return {
+                    error:'error',
+                    message: 'An error has occurred'
+                }
+            }
+        
+            const data = {
+                success: 'success',
+                message: 'User updated successfully',
+            }
+            return data
+        } catch(err){
+
+        }
+    };
+
+    async deleteUserAvatar(user_id: number){
+        try{
+            const user  = await this.getUserAccountById(user_id);
+            if(!user)
+                return{
+                    error: 'error',
+                    message: 'User not found'
+                }
+
+            const updatedFields: {
+                avatar?: string; 
+            } = {
+                avatar: null
+            };
+
+
+            const update = await this.userRepository.update({ id: user.id }, updatedFields);
+        
+            if(update.affected < 1){
+                return {
+                    error:'error',
+                    message: 'An error has occurred'
+                }
+            }
+        
+            const data = {
+                success: 'success',
+                message: 'User updated successfully',
+                user: user,
+            }
+            return data
+        } catch(err){
+
+        }
+    };
+
+    async updateUserIdentityProfile(user_id: number, userdetails: any){
+        try{
+            const user  = await this.getUserAccountById(user_id);
+            if(!user)
+                return{
+                    error: 'error',
+                    message: 'User not found'
+                }
+
+            const updatedFields: {
+                firstname?: string; 
+                lastname?: string; 
+                public_name?: string; 
+            } = {
+                firstname: userdetails.firstname??'',
+                lastname: userdetails.lastname??'',
+                public_name: userdetails.public_name??''
+            };
+
+            const update = await this.userRepository.update({ id: user.id }, updatedFields);
+        
+            if(update.affected < 1){
+                return {
+                    error:'error',
+                    message: 'An error has occurred'
+                }
+            }
+        
+            const data = {
+                success: 'success',
+                message: 'User updated successfully',
+            }
+            return data
+        } catch(err){
+
+        }
+    };
+
+    async updateUserContactProfile(user_id: number, userdetails: any){
+        try{
+            const user  = await this.getUserAccountById(user_id);
+            if(!user)
+                return{
+                    error: 'error',
+                    message: 'User not found'
+                }            
+            
+            const matches = await this.checkUserEmailMatchesIncoming(user, userdetails)
+            if(!matches)
+                await this.authService.checkUserAccountEmailExists(userdetails.email);
+                
+            const updateUserProfile = await this.updateProfile(user, userdetails);
+            if(!updateUserProfile){
+                return {
+                    error:'error',
+                    message: 'An error has occurred'
+                }
+            }
+
+            const updatedFields: {
+                email?: string; 
+            } = {
+                email: userdetails.email
+            };
+
+
+            const update = await this.userRepository.update({ id: user.id }, updatedFields);
+        
+            if(update.affected < 1){
+                return {
+                    error:'error',
+                    message: 'An error has occurred'
+                }
+            }
+        
+            const data = {
+                success: 'success',
+                message: 'User updated successfully',
+            }
+            return data
+        } catch(err){
+
+        }
+    };
+
+    async updateProfile(user:any, userdetails:any){
+        try{
+            const profile = await this.profileRepository.findOne({ where: { user: user } });
+
+            console.log(profile, 'ssd')
+            if (!profile) {
+                throw new HttpException('Profile not found', HttpStatus.NOT_FOUND);
+            }
+
+            
+
+            const updatedFields: {
+                bio?: string;
+                bioPlain?: string;
+                phonenumber?: string;
+                affiliation?: string;
+                mailing_address?: string;
+                homepage?: string;
+                orcid?: string;
+            } = {
+                // bio: userdetails.bio,
+                // bioPlain: sanitizedBio,
+                // homepage: userdetails.homepage??'',
+                // orcid: userdetails.orcid??'',
+                // phonenumber: userdetails.phonenumber??'',
+                // affiliation: userdetails.affiliation??'',
+                // mailing_address: userdetails.mailing_address??'',
+            };
+
+            if(userdetails.bio){
+                const sanitizedBio = this.sanitizerService.sanitizeInput(userdetails.bio);
+                updatedFields.bio = userdetails.bio??'';
+                updatedFields.bioPlain = sanitizedBio;
+            }
+
+            if(userdetails.phonenumber)
+                updatedFields.phonenumber = userdetails.phonenumber??'';
+
+            if(userdetails.affiliation)
+                updatedFields.affiliation = userdetails.affiliation??'';
+
+            if(userdetails.mailing_address)
+                updatedFields.mailing_address = userdetails.mailing_address??'';
+
+            if(userdetails.homepage)
+                updatedFields.homepage = userdetails.homepage??'';
+
+            if(userdetails.orcid)
+                updatedFields.orcid = userdetails.orcid??'';
+
+            const update = await this.profileRepository.update({ id: profile.id }, updatedFields);
+            if(update.affected < 1){
+                return false
+            }
+            return true
+
+        } catch (err) {
+            console.log(err)
+        }
+
+    }
+
     async updateUserStatus(user_id: number){
         try{
             const user  = await this.getUserAccountById(user_id);
@@ -553,6 +861,15 @@ export class UsersService {
         const newEmail = userDetails.email.trim().toLowerCase();
 
         const matches = currentEmail === newEmail;
+
+        return matches;
+    }
+
+    async checkPasswordMatchesIncoming(apassword, cpassword) {
+        const password = apassword.trim();
+        const confirmpassword = cpassword.trim();
+
+        const matches = password === confirmpassword;
 
         return matches;
     }

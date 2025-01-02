@@ -169,7 +169,7 @@ export class SubmissionsService {
 
       const submission = await this.submissionsRepository.findOne({where:{ id: submissionData.id }});
       if (!submission) {
-        throw new NotFoundException('User not found');
+        throw new NotFoundException('Submission not found');
       }
 
       const updatedFields = {

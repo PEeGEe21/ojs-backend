@@ -10,6 +10,13 @@ export class UsersController {
         return this.usersService.initData();
     }
 
+    @Get(':id')
+    findOne(
+        @Param('id') id: number
+    ) {
+        return this.usersService.findOne(id);
+    }
+
     @Get('/')
     findAll() {
         return this.usersService.findAll();
@@ -59,6 +66,45 @@ export class UsersController {
         @Body() userUpdateDto: any,
     ): Promise<any> {
         return this.usersService.updateUser(user_id, userUpdateDto);
+    }
+
+    @Post('/update-user-password/:user_id')
+    async updateUserPassword(
+        @Param('user_id', ParseIntPipe) user_id: number,
+        @Body() userUpdateDto: any,
+    ): Promise<any> {
+        return this.usersService.updateUserPassword(user_id, userUpdateDto);
+    }
+
+    @Post('/update-user-profile/:user_id')
+    async updateUserProfile(
+        @Param('user_id', ParseIntPipe) user_id: number,
+        @Body() userUpdateDto: any,
+    ): Promise<any> {
+        return this.usersService.updateUserProfile(user_id, userUpdateDto);
+    }
+
+    @Post('/delete-user-avatar/:user_id')
+    async deleteUserAvatar(
+        @Param('user_id', ParseIntPipe) user_id: number,
+    ): Promise<any> {
+        return this.usersService.deleteUserAvatar(user_id);
+    }
+
+    @Post('/update-user-identity-profile/:user_id')
+    async updateUserIdentityProfile(
+        @Param('user_id', ParseIntPipe) user_id: number,
+        @Body() userUpdateDto: any,
+    ): Promise<any> {
+        return this.usersService.updateUserIdentityProfile(user_id, userUpdateDto);
+    }
+
+    @Post('/update-user-contact-profile/:user_id')
+    async updateUserContactProfile(
+        @Param('user_id', ParseIntPipe) user_id: number,
+        @Body() userUpdateDto: any,
+    ): Promise<any> {
+        return this.usersService.updateUserContactProfile(user_id, userUpdateDto);
     }
 
     @Post('/update-active-status/:user_id')
