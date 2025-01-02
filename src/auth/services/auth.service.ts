@@ -36,17 +36,28 @@ export class AuthService {
 
         await this.usersService.checkAccountActiveStatus(user.id);
 
-        if (user) return this.loginUser(user, password);
+        // if (user) return this.loginUser(user, password);
         return this.loginUser(user, password);
+    }
+
+    async signInAs(loginDto: any): Promise<LoginResponseDto> {
+        const { email } = loginDto;
+        const user = await this.usersService.getUserAccountByEmail(email);
+        if (!user)
+            throw new HttpException('Incorrrect Email or Password.', HttpStatus.BAD_REQUEST);
+
+        await this.usersService.checkAccountActiveStatus(user.id);
+
+        // if (user) return this.loginUser(user, false);
+        return this.loginUser(user, false);
     }
 
     private async loginUser(
         user: any,
-        password: string,
+        password: any,
       ): Promise<LoginResponseDto> {
         
         try {
-          console.log(user, 'dfd')
             if (!user) {
                 throw new UnauthorizedException(
                     'SignIn Failed!, Incorrect login credentials',
@@ -57,19 +68,21 @@ export class AuthService {
                 user.email,
             );
         
-            const isCorrectPassword = await bcrypt.compare(password, userPassword);
+            if(password){
+              const isCorrectPassword = await bcrypt.compare(password, userPassword);
 
-            if (!isCorrectPassword) {
-                throw new BadRequestException(
-                    'SignIn Failed!, Incorrect login credentials',
-                );
+              if (!isCorrectPassword) {
+                  throw new BadRequestException(
+                      'SignIn Failed!, Incorrect login credentials',
+                  );
+              }
             }
             
-          console.log(user, 'dfd')
+          // console.log(user, 'dfd')
 
 
             const userRoles = await this.usersService.getUserRoles(user.id);
-            console.log(userRoles,' eeffef')
+            // console.log(userRoles,' eeffef')
             const defaultUserRole = userRoles.find(role => role.is_default) || null;
 
             const payload = {

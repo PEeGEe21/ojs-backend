@@ -15,6 +15,12 @@ export class AuthController {
         return this.authService.signIn(signInDto);
     }
 
+    @HttpCode(HttpStatus.OK)
+    @Post('login-in-as')
+    async signInAs(@Body() signInDto: any): Promise<LoginResponseDto> {
+        return this.authService.signInAs(signInDto);
+    }
+
     @Post('/signup')
     async userSignup(
         @Body() userSignupDto: any,
