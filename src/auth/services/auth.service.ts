@@ -72,9 +72,13 @@ export class AuthService {
               const isCorrectPassword = await bcrypt.compare(password, userPassword);
 
               if (!isCorrectPassword) {
-                  throw new BadRequestException(
-                      'SignIn Failed!, Incorrect login credentials',
-                  );
+                  return{
+                    error: 'Invalid password',
+                    message: 'Invalid password'
+                  };
+                  // throw new BadRequestException(
+                  //     'SignIn Failed!, Incorrect login credentials',
+                  // );
               }
             }
             
