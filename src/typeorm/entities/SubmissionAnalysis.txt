@@ -1,0 +1,44 @@
+import {
+    Entity,
+    Column,
+    PrimaryGeneratedColumn,
+    ManyToOne,
+    JoinColumn,
+    CreateDateColumn,
+    UpdateDateColumn,
+    Index,
+    OneToOne
+  } from 'typeorm';
+import { User } from './User';
+import { Submission } from './Submission';
+
+@Entity('submission_analysis')
+@Index('index_submission_analysis', ['submissionId'])
+export class SubmissionAnalysis {
+    @PrimaryGeneratedColumn()
+    id: number;
+  
+    @Column({ type: 'int', name: 'submission_id' })
+    submissionId: number;
+
+    @Column({ type: 'longtext', nullable: true })
+    summary: string;
+
+    @Column({ type: 'longtext', nullable: true })
+    abstract: string;
+
+    @Column({ type: 'longtext', nullable: true })
+    recommendation: string;
+  
+    @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
+    createdAt: Date;
+  
+    @UpdateDateColumn({ type: 'timestamp', name: 'updated_at' })
+    updatedAt: Date;
+  
+    // Relationships
+    @OneToOne(() => Submission, submission => submission.analysis)
+    @JoinColumn({ name: 'submission_id' })
+    submission: Submission;
+}
+  

@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany, JoinColumn, OneToOne } from 'typeorm';
 import { User } from './User';
 import { SubmissionFile } from './SubmissionFIle';
 import { Journal } from './Journal';
@@ -6,6 +6,7 @@ import { Issue } from './Issue';
 import { SubmissionEditor } from './SubmissionEditor';
 import { Section } from './Section';
 import { SubmissionContributor } from './SubmissionContributor';
+// import { SubmissionAnalysis } from './SubmissionAnalysis';
 
 @Entity('submissions')
 export class Submission {
@@ -109,4 +110,8 @@ export class Submission {
   @ManyToOne(() => Section, section => section.submissions)
   @JoinColumn({ name: 'section_id' })
   section: Section;
+
+  // @OneToOne(() => SubmissionAnalysis, (analysis)=>analysis.submission)
+  // @JoinColumn({ name: 'analysis_id'})
+  // analysis: SubmissionAnalysis;
 }

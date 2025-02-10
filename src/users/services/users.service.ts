@@ -336,7 +336,7 @@ export class UsersService {
         }
 
         throw new HttpException(
-            'Please Choose a Default Role!',
+            'An Error Occurred!',
             HttpStatus.BAD_REQUEST
         );
     }
